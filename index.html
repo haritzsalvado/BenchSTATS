@@ -16,7 +16,7 @@ html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bott
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0} img{max-width:100%} [hidden]{display:none!important}
 </style>
-<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.3.0';</script>
+<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.5.0';</script>
 <title>Bench Live Stats</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -92,7 +92,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .sanc[aria-expanded="true"]{border-style:solid;border-color:var(--fg)}
 .sanc .none{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;padding:0 4px}
 .scc{width:25px;height:25px;border-radius:50%;border:2.5px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-family:var(--f-num);font-size:11px;font-weight:700;flex:none;color:var(--fg)}
-.scc.yc{border-color:var(--yc)} .scc.two{border-color:var(--blue)} .scc.rc{border-color:var(--rc)}
+.scc.yc{border-color:var(--yc)} .scc.two{border-color:var(--blue)} .scc.rc{border-color:var(--rc)} .scc.third{color:var(--red)}
 .o3{font-family:var(--f-num);font-size:11px;font-weight:700;border:1.5px solid var(--fb);color:var(--fb);border-radius:12px;padding:3px 7px;flex:none}
 .o3.ok{background:var(--fb);color:var(--card)}
 .sanc-pop{position:absolute;top:48px;left:10px;right:10px;z-index:6;background:var(--card);border:2px solid var(--fg);border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.25);max-height:60%;display:flex;flex-direction:column;overflow:hidden}
@@ -102,8 +102,15 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .sp-r{display:grid;grid-template-columns:30px minmax(0,1.6fr) .9fr .8fr minmax(0,1.6fr);gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
 .sp-r:last-child{border-bottom:0}
 .sp-r .ty{font-weight:700}
-.sp-r .tm{font-family:var(--f-num);color:var(--muted)}
+.sp-r .tm{font-family:var(--f-num);color:var(--muted);white-space:nowrap}
 .sp-r .pv{color:var(--muted)}
+.o3d{display:flex;flex-wrap:wrap;gap:6px;padding:0 0 9px 38px;border-bottom:1px solid var(--line)}
+.o3d .at{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:7px;padding:4px 8px;background:var(--card2)}
+.o3d .at b{font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.o3d .mk2{font-family:var(--f-num);font-weight:700;font-size:14px}
+.o3d .mk2 sub{font-size:9px}
+.o3d .mk2.pos{color:var(--red)} .o3d .mk2.neg{color:var(--blue)} .o3d .mk2.neu{color:var(--neutral)}
+.o3d .open{font-size:11px;color:var(--muted);font-style:italic}
 
 .panel{background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}
 .sec-l{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
@@ -122,7 +129,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .mk.sf{background:transparent;box-shadow:inset 0 0 0 2px var(--sf)}
 .gkpct{font-family:var(--f-num);font-size:12px;color:var(--muted);min-width:58px;text-align:right;line-height:1.2}
 .gkpct .sfc{color:var(--sf);font-size:10px}
-.gkact{font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--brand);text-transform:uppercase}
+.gkact{font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--brand);text-transform:uppercase;min-width:44px;text-align:right}
+.gkpct.r{min-width:auto;padding-right:2px}
 
 /* maps */
 .maps{display:grid;grid-template-columns:1.45fr 1fr;gap:8px}
@@ -130,13 +138,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .court svg.bg{position:absolute;inset:6px;width:calc(100% - 12px);height:calc(100% - 12px);pointer-events:none}
 .zgrid{position:relative;display:grid;grid-template-columns:.85fr 1fr 1fr 1fr .85fr;grid-template-rows:repeat(4,minmax(32px,auto));gap:3px;grid-template-areas:"lw pnl pnc pnr rw" "lw pvl pvc pvr rw" "z69l z69l z69c z69r z69r" "z9l z9l z9c z9r z9r"}
 .zc{border:1px dashed var(--line);border-radius:5px;padding:2px 3px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:1px 3px;background:color-mix(in srgb,var(--card) 70%,transparent);min-width:0;position:relative}
-.zc .zl{width:100%;font-size:8.5px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;line-height:1.2}
+.zc .zl{display:none}
+.court .zc{border:0;background:transparent}
 .chip{font-family:var(--f-num);font-size:11px;font-weight:700;line-height:1.25}
-.chip.g{color:var(--red)} .chip.n{color:var(--blue)}
+.chip.g{color:var(--red)} .chip.n{color:var(--blue)} .chip.k{color:var(--fg)}
 .fbmap{padding:6px;display:grid;grid-template-columns:34px 1fr 1fr 1fr;gap:3px;align-content:start}
 .fbmap .rl{font-family:var(--f-disp);font-weight:700;font-size:12px;display:flex;align-items:center;color:var(--muted)}
-.fbmap .zc{min-height:22px}
-.fbmap .hd{font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-align:center}
+.fbmap .zc{min-height:22px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent}
+.fbmap .hd{font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-align:center;border-bottom:1px solid var(--line);padding-bottom:3px}
 
 /* chronogram */
 .chrono{display:flex;padding:4px 0 4px 4px}
@@ -205,6 +214,24 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .scrim{position:fixed;inset:0;background:var(--scrim);z-index:40;display:flex;align-items:center;justify-content:center;padding:16px}
 .modal{background:var(--card);border-radius:12px;width:min(640px,100%);max-height:calc(100% - 20px);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 .modal.wide{width:min(900px,100%)}
+.modal.xwide{width:min(1240px,100%)}
+/* zoomed views */
+.zoom .court{padding:10px} .zoom .court svg.bg{inset:10px;width:calc(100% - 20px);height:calc(100% - 20px)}
+.zoom .zgrid{grid-template-rows:repeat(4,minmax(96px,auto));gap:6px}
+.zoom .chip{font-size:22px;line-height:1.3}
+.zoom .zc{gap:2px 10px;padding:6px}
+.zoom .fbmap{grid-template-columns:70px 1fr 1fr 1fr;gap:6px;padding:10px}
+.zoom .fbmap .zc{min-height:62px}
+.zoom .fbmap .rl{font-size:20px}
+.zoom .fbmap .hd{font-size:13px}
+.zoom .chrono{padding:8px 0 8px 8px}
+.zoom .ch-labels,.zoom .ch-grid{grid-template-rows:26px repeat(5,44px)}
+.zoom .ch-labels span{font-size:17px;padding-right:10px}
+.zoom .ch-grid{grid-auto-columns:minmax(44px,max-content)}
+.zoom .ch-grid > div{font-size:18px;padding:0 6px}
+.zoom .ch-grid .hn{font-size:12px}
+.zoom .ch-grid sub{font-size:11px;top:4px}
+[data-act="zoom"]{cursor:zoom-in}
 .m-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
 .m-head h2{font-family:var(--f-disp);font-size:20px;margin:0;flex:1;letter-spacing:.02em}
 .m-body{padding:14px 16px;overflow:auto;display:flex;flex-direction:column;gap:12px}
@@ -284,6 +311,18 @@ table.pt td.pc{color:var(--brand);font-weight:700}
 table.pt td.mb{color:var(--red)}
 table.pt tr.sub td{border-top:2px solid var(--line)}
 table.pt tfoot td{font-weight:700;border-top:2px solid var(--fg);border-bottom:0}
+.ptabs{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.ptab{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ptab-h{font-family:var(--f-disp);font-weight:700;font-size:17px;letter-spacing:.04em;text-transform:uppercase;color:var(--tc);border-bottom:3px solid var(--tc);padding-bottom:4px}
+table.pp{min-width:560px;font-size:12.5px}
+table.pp th,table.pp td{padding:6px 5px}
+table.pp thead tr:first-child th{background:var(--card2)}
+table.pp td.pl,table.pp th.pl{text-align:left;font-family:var(--f-body);font-weight:600;white-space:nowrap;padding-left:10px}
+table.pp td.pl .num{display:inline-block;min-width:2.2ch;color:var(--muted)}
+table.pp td.pl small{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.06em}
+table.pp tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--card2) 60%,transparent)}
+table.pp td.pm{font-weight:700;font-size:13.5px}
+table.pp td.pm.up{color:var(--red)} table.pp td.pm.down{color:var(--blue)} table.pp td.pm.zero{color:var(--fg)}
 .foot-note{font-size:12px;color:var(--muted);line-height:1.5;max-width:80ch;margin:0}
 
 @media (max-width: 1000px){
@@ -292,7 +331,7 @@ table.pt tfoot td{font-weight:700;border-top:2px solid var(--fg);border-bottom:0
   .console{grid-template-columns:1fr}
   .half{overflow:visible}
   .half+.half{border-left:0;border-top:2px solid var(--red)}
-  .setup-in,.an-cards{grid-template-columns:1fr}
+  .setup-in,.an-cards,.ptabs{grid-template-columns:1fr}
   .tiles{grid-template-columns:repeat(3,1fr)}
 }
 @media (max-width: 560px){
@@ -377,7 +416,7 @@ function migrate(o){
   return o;
 }
 
-const UI = { view:'match', matchId:null, flow:null, analysis:false, aHalf:'T', modal:null, toastTimer:null, sanc:null };
+const UI = { view:'match', matchId:null, flow:null, analysis:false, aHalf:'T', aTab:'team', modal:null, toastTimer:null, sanc:null };
 
 /* ===================== helpers ===================== */
 const team = id => DB.teams.find(t=>t.id===id);
@@ -403,7 +442,7 @@ function describe(m,e){
       let s = `${PH_LABEL[e.phase]} · ${RES_LABEL[e.res]||e.res}`;
       if(SHOT.includes(e.res)) s += ` · ${pn(e.p)} · ${ZONE_LABEL[e.zone]||'–'}`;
       else if(TURN.includes(e.res)) s += ` · ${pn(e.p)}`;
-      else if(e.res==='7M') s += ` · prov. ${pn(e.p)} · comm. ${on(e.opp)}`;
+      else if(e.res==='7M') s += ` · prov. ${pn(e.p)} · comm. ${on(e.opp)}`+(e.zone?` · ${ZONE_LABEL[e.zone]}`:'');
       else if(e.res==='2MIN') s += ` · prov. ${pn(e.p)} · sanct. ${on(e.opp)}`+t();
       else if(e.res==='FOUL') s += ` · by ${on(e.opp)}`;
       else if(e.res==='SFOUL') s += ` · by ${on(e.opp)} · GK ${on(e.gk)}`;
@@ -469,14 +508,45 @@ function sanctions(m,s){
     else if(e.kind==='pen2' && e.side===s) out.push({type:'two', pid:e.p, e, prov:e.opp});
     else if(e.kind==='poss' && e.side===o && e.res==='2MIN') out.push({type:'two', pid:e.opp, e, prov:e.p});
   });
+  const twos = {};
+  out.forEach(x=>{ if(x.type==='two' && x.pid && x.pid!=='?'){ twos[x.pid] = (twos[x.pid]||0)+1; if(twos[x.pid]===3) x.third = true; } });
   return out;
 }
 // players out for treatment (3 attacks) on side s, with attacks completed since
-function outs(m,s){
-  const fin = finals(m).filter(f=>f.side===s).map(f=>m.events.indexOf(f));
-  return m.events.map((e,i)=>({e,i})).filter(x=>x.e.kind==='out3' && x.e.side===s)
-    .map(x=>({e:x.e, n:fin.filter(fi=>fi>x.i).length}));
+// An attack runs from the moment a team gains the ball until the other team has it.
+// Stop FB, fouls, 2' and 7m do not end it; it ends when the rival registers a possession or the half changes.
+function attacks(m){
+  const out = [];
+  m.events.forEach((e,i)=>{ if(e.kind!=='poss') return;
+    const a = out[out.length-1];
+    if(a && a.side===e.side && a.half===e.half) a.last = i;
+    else out.push({side:e.side, half:e.half, first:i, last:i}); });
+  out.forEach((a,k)=>{
+    const nextFirst = k < out.length-1 ? out[k+1].first : m.events.length;
+    a.end = a.last;   // the 7m throw belongs to the attack that provoked it
+    for(let i=a.last+1;i<nextFirst;i++){ const e = m.events[i]; if(e.kind==='p7' && e.side===a.side) a.end = i; }
+    const le = m.events[a.end];
+    const lost = (le.kind==='poss' && (le.res==='GOAL' || le.res==='OUT' || TURN.includes(le.res))) || (le.kind==='p7' && ['GOAL','SAVE','OUT'].includes(le.res));
+    a.complete = k < out.length-1 || a.half < m.half || lost;
+  });
+  return out;
 }
+// players out for treatment: completed attacks of their team whose last action came after the player went out
+function outs(m,s){
+  const ats = attacks(m).filter(a=>a.side===s);
+  return m.events.map((e,i)=>({e,i})).filter(x=>x.e.kind==='out3' && x.e.side===s)
+    .map(x=>{ const after = ats.filter(a=>a.end>x.i); return {e:x.e, n:after.filter(a=>a.complete).length, list:after.slice(0,3)}; });
+}
+// marks used in the possession timeline and in the player-out detail
+const markCls = e => POSITIVE.has(e.res) ? 'pos' : NEUTRAL.has(e.res) ? 'neu' : 'neg';
+function markTxt(m,s,e){ const own = esc(dn(m,s,e.p)), opp = esc(dn(m,other(s),e.opp));
+  if(SHOT.includes(e.res)) return own;
+  if(TURN.includes(e.res)) return `${e.res}<sub>${own}</sub>`;
+  if(e.res==='7M') return `7m<sub>${own}</sub>`;
+  if(e.res==='2MIN') return `2'<sub>${own}</sub>`;
+  if(e.res==='FOUL') return `F<sub>${opp}</sub>`;
+  if(e.res==='SFOUL') return `SF<sub>${opp}</sub>`;
+  return 'SFB'; }
 
 /* ===================== theme ===================== */
 function applyTheme(){
@@ -532,22 +602,31 @@ function halfHTML(m,s){
     <div class="maps">${courtHTML(m,s)}${fbMapHTML(m,s)}</div>
     ${chronoHTML(m,s)}
     <div class="pad">${ph(POS_PH,'big')}${ph(FB_PH,'fb')}${ph(AG_PH,'ag')}</div>
-    <div class="extras">${x('foul','F')}${x('out3','✚<small>out</small>')}${x('yc','YC','yc')}${x('rc','RC','rcard')}${x('pen2',"2'")}${x('p7','7m')}</div>
+    <div class="extras">${x('foul','F')}${x('out3','✚')}${x('yc','YC','yc')}${x('rc','RC','rcard')}${x('pen2',"2'")}${x('p7','7m')}</div>
     ${UI.flow && UI.flow.side===s ? flowHTML(m) : ''}
   </section>`;
 }
 function sancStrip(m,s){
   const list = sanctions(m,s), ol = outs(m,s).filter(o=>o.n<=3);
-  const circles = list.map(x=>`<span class="scc ${x.type}" title="${x.type==='yc'?'Yellow card':x.type==='rc'?'Red card':"2'"}">${esc(dn(m,s,x.pid))}</span>`).join('');
+  const circles = list.map(x=>`<span class="scc ${x.type}${x.third?' third':''}" title="${x.type==='yc'?'Yellow card':x.type==='rc'?'Red card':"2'"}">${esc(dn(m,s,x.pid))}</span>`).join('');
   const pills = ol.map(o=>`<span class="o3 ${o.n>=3?'ok':''}">✚${esc(dn(m,s,o.e.p))} ${o.n>=3?'✓':o.n+'/3'}</span>`).join('');
   const inner = circles || pills ? pills + circles : '<span class="none">Sanctions</span>';
   return `<button class="sanc" data-act="sanc" data-side="${s}" aria-expanded="${UI.sanc===s}" aria-label="Sanctions, tap for details">${inner}</button>`;
 }
 function sancPop(m,s){
   const o = other(s), list = sanctions(m,s), ol = outs(m,s);
+  // (third 2' of a player is flagged by sanctions())
   const label = {yc:'Yellow card',two:"2'",rc:'Red card'};
-  let rows = list.map(x=>`<div class="sp-r"><span class="scc ${x.type}">${esc(dn(m,s,x.pid))}</span><span>${esc(pName(m,s,x.pid))}</span><span class="ty">${label[x.type]}</span><span class="tm">${tmStr(x.e)||'–'}</span><span class="pv">${x.prov!==null&&x.prov!==undefined?'('+esc(pName(m,o,x.prov))+')':''}</span></div>`).join('');
-  rows += ol.map(x=>`<div class="sp-r"><span class="o3 ${x.n>=3?'ok':''}" style="padding:2px 4px">✚</span><span>${esc(pName(m,s,x.e.p))}</span><span class="ty">Player out</span><span class="tm">${x.n>=3?'can return':x.n+'/3 attacks'}</span><span></span></div>`).join('');
+  let rows = list.map(x=>`<div class="sp-r"><span class="scc ${x.type}${x.third?' third':''}">${esc(dn(m,s,x.pid))}</span><span>${esc(pName(m,s,x.pid))}</span><span class="ty">${label[x.type]}${x.third?' · 3rd':''}</span><span class="tm">${tmStr(x.e)||'–'}</span><span class="pv">${x.prov!==null&&x.prov!==undefined?'('+esc(pName(m,o,x.prov))+')':''}</span></div>`).join('');
+  const fin = finals(m);
+  rows += ol.map(x=>{
+    const ats = x.list.map((a,k)=>{
+      const marks = fin.filter(f=>{ const i = m.events.indexOf(f); return f.side===s && i>=a.first && i<=a.last; })
+        .map(f=>`<span class="mk2 ${markCls(f)}">${markTxt(m,s,f)}</span>`).join(' ');
+      const p7 = m.events.slice(a.last+1, a.end+1).filter(e=>e.kind==='p7' && e.side===s).map(e=>`<span class="mk2 ${e.res==='GOAL'?'pos':'neg'}">7m ${e.res==='GOAL'?'✓':'✗'}</span>`).join(' ');
+      return `<span class="at"><b>${k+1}</b>${marks}${p7?' '+p7:''}${a.complete?'':' <span class="open">in progress</span>'}</span>`; }).join('');
+    return `<div class="sp-r"><span class="o3 ${x.n>=3?'ok':''}" style="padding:2px 4px">✚</span><span>${esc(pName(m,s,x.e.p))}</span><span class="ty">Player out</span><span class="tm">${x.n>=3?'can return':x.n+'/3 attacks'}</span><span></span></div>`
+      + `<div class="o3d">${ats || '<span class="open">No attack yet since he went out</span>'}</div>`; }).join('');
   return `<div class="sanc-pop" role="dialog" aria-label="Sanctions ${esc(sideTeam(m,s).name)}">
     <div class="sp-h"><b>Sanctions · ${esc(sideTeam(m,s).abbr)}</b><button class="mini" data-act="sanc" data-side="${s}">✕ Close</button></div>
     <div class="sp-b">${rows || '<p class="hint" style="padding:8px 0">No sanctions yet.</p>'}</div></div>`;
@@ -566,11 +645,11 @@ function gkHTML(m,s){
     const on = act===g.id;
     return `<button class="gkrow ${on?'active':''}" data-act="gk" data-side="${s}" data-v="${g.id}" ${ro(m)?'disabled':''} aria-label="Goalkeeper ${g.num}, tap to set in goal">
       <span class="gknum">${g.num}</span>
-      <span class="gkline"><span class="seq">${seqEv.slice(-34).map(mk).join('')}</span><span class="g7"><span class="sec-l">7M</span>${p7.slice(-6).map(mk7).join('')}<span class="num" style="font-size:11px;margin-left:auto;color:var(--muted)">${n7?s7+'/'+n7:''}</span></span></span>
-      <span class="gkpct">${sv+gl?sv+'/'+(sv+gl):''}${sf?` <span class="sfc">+${sf} SF</span>`:''}${on?'<br><span class="gkact">in goal</span>':''}</span>
+      <span class="gkline"><span class="seq">${seqEv.slice(-30).map(mk).join('')}</span><span class="gkpct r">${sv+gl?sv+'/'+(sv+gl):''}</span><span class="g7"><span class="sec-l">7M</span>${p7.slice(-6).map(mk7).join('')}<span class="num" style="font-size:11px;margin-left:auto;color:var(--muted)">${n7?s7+'/'+n7:''}</span></span></span>
+      <span class="gkact">${on?'in goal':''}</span>
     </button>`; }).join('')}</div>`;
 }
-function chipsFor(m,s,list){ return list.map(e=>`<span class="chip ${e.res==='GOAL'?'g':'n'}">${esc(dn(m,s,e.p))}</span>`).join(''); }
+function chipsFor(m,s,list){ return list.map(e=>`<span class="chip ${e.res==='GOAL'?'g':e.res==='7M'?'k':'n'}" title="${esc(describe(m,e))}">${esc(dn(m,s,e.p))}</span>`).join(''); }
 function courtSVG(){
   return `<svg class="bg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
     <path d="M14 0 Q14 30 50 30 Q86 30 86 0" fill="none" stroke="var(--fg)" stroke-width=".8" vector-effect="non-scaling-stroke"/>
@@ -578,9 +657,9 @@ function courtSVG(){
     <rect x="42" y="0" width="16" height="3" fill="var(--fg)"/></svg>`;
 }
 function courtHTML(m,s){
-  const shots = m.events.filter(e=>e.kind==='poss' && e.side===s && SHOT.includes(e.res) && !isTrans(e.phase));
+  const shots = m.events.filter(e=>e.kind==='poss' && e.side===s && (SHOT.includes(e.res) || (e.res==='7M' && e.zone)) && !isTrans(e.phase));
   const cells = POS_ZONES.map(([a,code,label])=>`<div class="zc" style="grid-area:${a}"><span class="zl">${label}</span>${chipsFor(m,s,shots.filter(e=>e.zone===code))}</div>`).join('');
-  return `<div class="panel court" aria-label="Positional shot map">${courtSVG()}<div class="zgrid">${cells}</div></div>`;
+  return `<div class="panel court" data-act="zoom" data-v="court" data-side="${s}" aria-label="Positional shot map, tap to enlarge">${courtSVG()}<div class="zgrid">${cells}</div></div>`;
 }
 function fbMapHTML(m,s){
   const shots = m.events.filter(e=>e.kind==='poss' && e.side===s && SHOT.includes(e.res) && isTrans(e.phase));
@@ -588,30 +667,32 @@ function fbMapHTML(m,s){
   let h = `<span></span><span class="hd">L</span><span class="hd">C</span><span class="hd">R</span>`;
   rows.forEach(([lab,f])=>{ h += `<span class="rl">${lab}</span>`;
     ['L','C','R'].forEach(z=>{ h += `<div class="zc">${chipsFor(m,s,shots.filter(e=>f(e) && (e.zone===z || e.zone==='CC'+z)))}</div>`; }); });
-  return `<div class="panel fbmap" aria-label="Fastbreak shot map">${h}</div>`;
+  return `<div class="panel fbmap" data-act="zoom" data-v="fb" data-side="${s}" aria-label="Fastbreak shot map, tap to enlarge">${h}</div>`;
 }
 function chronoHTML(m,s){
   const o = other(s), fin = finals(m).filter(e=>e.side===s);
   const rows = ['6x6','7x6','+1','-1','FB'];
   const lab = `<div class="ch-labels"><span></span>${rows.map(r=>`<span>${r}</span>`).join('')}</div>`;
   if(!fin.length) return `<div class="panel chrono">${lab}<div class="ch-empty">Possessions will appear here, one column each.</div></div>`;
-  let g = '', prevHalf = fin[0].half;
-  fin.forEach((e,i)=>{
-    const h2 = e.half!==prevHalf ? ' h2' : ''; prevHalf = e.half;
-    const row = isTrans(e.phase) ? 'FB' : e.phase;
-    const cls = POSITIVE.has(e.res) ? 'pos' : NEUTRAL.has(e.res) ? 'neu' : 'neg';
-    const own = esc(dn(m,s,e.p)), opp = esc(dn(m,o,e.opp));
-    let txt;
-    if(SHOT.includes(e.res)) txt = own;
-    else if(TURN.includes(e.res)) txt = `${e.res}<sub>${own}</sub>`;
-    else if(e.res==='7M') txt = `7m<sub>${own}</sub>`;
-    else if(e.res==='2MIN') txt = `2'<sub>${own}</sub>`;
-    else if(e.res==='FOUL') txt = `F<sub>${opp}</sub>`;
-    else if(e.res==='SFOUL') txt = `SF<sub>${opp}</sub>`;
-    else txt = 'SFB';
-    g += `<div class="hn${h2}">${i+1}</div>` + rows.map(r=>`<div class="${h2.trim()} ${r===row?cls:''}" ${r===row?`title="${esc(describe(m,e))}"`:''}>${r===row?txt:''}</div>`).join('');
+  // a fastbreak stopped (Stop FB / foul) shares its column with the same team's following possession
+  const all = finals(m), cols = [];
+  fin.forEach(e=>{
+    const c = cols[cols.length-1], prev = c && c[c.length-1];
+    const nextOf = prev ? all[all.indexOf(prev)+1] : null;
+    if(prev && nextOf===e && prev.half===e.half && isTrans(prev.phase) && NEUTRAL.has(prev.res)) c.push(e); else cols.push([e]);
   });
-  return `<div class="panel chrono">${lab}<div class="ch-scroll" data-chrono><div class="ch-grid">${g}</div></div></div>`;
+  const rowOf = e => isTrans(e.phase) ? 'FB' : e.phase;
+  const clsOf = markCls, txtOf = e => markTxt(m,s,e);
+  let g = '', prevHalf = cols[0][0].half;
+  cols.forEach((c,i)=>{
+    const h2 = c[0].half!==prevHalf ? 'h2' : ''; prevHalf = c[0].half;
+    g += `<div class="hn ${h2}" ${h2?'title="2nd half starts here"':''}>${i+1}</div>` + rows.map(r=>{
+      const here = c.filter(e=>rowOf(e)===r);
+      if(!here.length) return `<div class="${h2}"></div>`;
+      return `<div class="${h2} ${clsOf(here[here.length-1])}" title="${esc(here.map(e=>describe(m,e)).join(' | '))}">${here.map(txtOf).join(' ')}</div>`;
+    }).join('');
+  });
+  return `<div class="panel chrono" data-act="zoom" data-v="chrono" data-side="${s}" aria-label="Possession timeline, tap to enlarge">${lab}<div class="ch-scroll" data-chrono><div class="ch-grid">${g}</div></div></div>`;
 }
 function scrollChronos(){ document.querySelectorAll('[data-chrono]').forEach(el=>{ el.scrollLeft = el.scrollWidth; }); }
 
@@ -630,10 +711,10 @@ function baseSteps(kind){
     case 'to':   return [...TIME];
   }
 }
-function afterRes(res){
+function afterRes(res, phase){
   if(SHOT.includes(res)) return [P('own','p','Shooter'), {t:'zone'}];
   if(TURN.includes(res)) return [P('own','p','Turnover by')];
-  if(res==='7M')   return [P('own','p','7m provoked by'), P('opp','opp','7m committed by')];
+  if(res==='7M')   return [P('own','p','7m provoked by'), P('opp','opp','7m committed by'), ...(isTrans(phase)?[]:[{t:'zone'}])];
   if(res==='2MIN') return [P('own','p',"2' provoked by"), P('opp','opp',"Player sanctioned (2')"), ...TIME];
   if(FOULS.includes(res)) return [P('opp','opp','Foul committed by')];
   return [];
@@ -641,7 +722,7 @@ function afterRes(res){
 function startFlow(side,kind,init={}){ UI.sanc = null; UI.flow = {side,kind,d:{...init},steps:baseSteps(kind),i:0}; wake(); render(); }
 function choose(v){
   const f = UI.flow, st = f.steps[f.i];
-  if(st.t==='res'){ f.d.res = v; f.steps = [st, ...afterRes(v)]; }
+  if(st.t==='res'){ f.d.res = v; f.steps = [st, ...afterRes(v, f.d.phase)]; }
   else if(st.t==='p7res') f.d.res = v;
   else if(st.t==='p') f.d[st.key] = v;
   else if(st.t==='zone') f.d.zone = v;
@@ -655,7 +736,7 @@ function commit(){
   const before = ['L','R'].flatMap(s=>outs(m,s).map(x=>[x.e.id,x.n]));
   const e = {id:uid(), kind:f.kind, side:f.side, half:m.half, ...f.d};
   if(e.kind==='poss'){
-    if(!SHOT.includes(e.res)) delete e.zone;
+    if(!SHOT.includes(e.res) && !(e.res==='7M' && !isTrans(e.phase))) delete e.zone;
     if((SHOT.includes(e.res) && !isCC(e.zone)) || e.res==='SFOUL') e.gk = m.activeGk[o] ?? null; }
   if(e.kind==='p7') e.gk = m.activeGk[o] ?? null;
   m.events.push(e); UI.flow = null; save(); render();
@@ -713,6 +794,17 @@ function flowHTML(m){
 
 /* ===================== analysis (page 3) ===================== */
 function analysisHTML(m){
+  const hb = (v,l) => `<button data-act="ahalf" data-v="${v}" aria-pressed="${UI.aHalf===v}">${l}</button>`;
+  const tb = (v,l) => `<button data-act="atab" data-v="${v}" aria-pressed="${UI.aTab===v}">${l}</button>`;
+  return `<div class="an" role="dialog" aria-label="Match analysis">
+    <header class="top"><span class="code">Analysis · <b>${esc(fullCode(m))}</b></span>
+      <div class="seg" role="tablist" aria-label="View">${tb('team','Team')}${tb('players','Players')}</div>
+      <div class="scorewrap">${timerHTML(m)}</div>
+      <div class="seg" role="group" aria-label="Period">${hb('1','1st half')}${hb('2','2nd half')}${hb('T','Total')}</div>
+      <button class="tb primary" data-act="analysis-close">Back to bench</button></header>
+    <div class="an-body"><div class="an-in">${UI.aTab==='players' ? playersHTML(m) : teamHTML(m)}</div></div></div>`;
+}
+function teamHTML(m){
   const S = computeStats(m, UI.aHalf), L = sideTeam(m,'L'), R = sideTeam(m,'R');
   const sc = score(m), adj = m.scoreAdj || {L:0,R:0};
   const card = (s,T,eyebrow) => { const x = S[s];
@@ -730,13 +822,7 @@ function analysisHTML(m){
   const row = (label,a,b,cls='') => `<tr class="${cls}">${cellsL(a)}<td class="ph">${label}</td>${cellsR(b)}</tr>`;
   let rows = ALL_PH.map((p,i)=>row(PH_LABEL[p], S.L.ph[p], S.R.ph[p], i===4?'sub':'')).join('');
   rows += row('Positional subtotal', S.L.positional, S.R.positional, 'sub') + row('Fastbreak subtotal', S.L.transition, S.R.transition);
-  const hb = (v,l) => `<button data-act="ahalf" data-v="${v}" aria-pressed="${UI.aHalf===v}">${l}</button>`;
-  return `<div class="an" role="dialog" aria-label="Match analysis">
-    <header class="top"><span class="code">Analysis · <b>${esc(fullCode(m))}</b></span>
-      <div class="scorewrap">${timerHTML(m)}</div>
-      <div class="seg" role="group" aria-label="Period">${hb('1','1st half')}${hb('2','2nd half')}${hb('T','Total')}</div>
-      <button class="tb primary" data-act="analysis-close">Back to bench</button></header>
-    <div class="an-body"><div class="an-in">
+  return `
       <div class="an-cards">${card('L',L,'Analysed team')}${card('R',R,'Opponent')}</div>
       <div class="tw"><table class="pt">
         <thead><tr><th colspan="4">${esc(L.name)}</th><th class="ph">Tactical system / phase</th><th colspan="4">${esc(R.name)}</th></tr>
@@ -744,9 +830,49 @@ function analysisHTML(m){
         <tbody>${rows}</tbody>
         <tfoot>${row('TOTAL', S.L.total, S.R.total)}</tfoot></table></div>
       <p class="foot-note">Eff. = positive possessions / possessions. Positive = goal, 7m provoked or 2' provoked. A possession that continues (same team taps again after a save, post, out, block or a foul in positional play) is counted once, by its final outcome. C/C shots count as FB 1w. Shoots excludes 7m. GK saves = saves / (saves + goals), without C/C or saves in foul; a 7m on the post counts as a save. Fouls and 2' are those committed/received by the team when defending.</p>
-    </div></div></div>`;
+`;
 }
 
+/* ---------- players tab ---------- */
+function computePlayers(m, half, s){
+  const o = other(s), inH = e => half==='T' || e.half===Number(half), rows = {};
+  const get = id => rows[id ?? '?'] ??= {sh:{g:0,n:0}, m7:{g:0,n:0}, p2:0, p7:0, mb:0, r2:0, r7:0};
+  m.events.filter(inH).forEach(e=>{
+    if(e.kind==='poss' && e.side===s){
+      if(SHOT.includes(e.res)){ const r = get(e.p); r.sh.n++; if(e.res==='GOAL') r.sh.g++; }
+      else if(TURN.includes(e.res)) get(e.p).mb++;
+      else if(e.res==='7M') get(e.p).p7++;
+      else if(e.res==='2MIN') get(e.p).p2++;
+    }
+    if(e.kind==='poss' && e.side===o){ if(e.res==='7M') get(e.opp).r7++; if(e.res==='2MIN') get(e.opp).r2++; }
+    if(e.kind==='p7' && e.side===s){ const r = get(e.p); r.m7.n++; if(e.res==='GOAL') r.m7.g++; }
+    if(e.kind==='pen2' && e.side===s) get(e.p).r2++;
+    if(e.kind==='pen2' && e.side===o) get(e.opp).p2++;
+  });
+  Object.values(rows).forEach(r=>{
+    const pos = r.sh.g + r.m7.g + r.p7 + r.p2, neg = (r.sh.n-r.sh.g) + (r.m7.n-r.m7.g) + r.mb + r.r2 + r.r7;
+    r.pm = pos - neg; r.any = pos + neg > 0;
+  });
+  return rows;
+}
+function playersHTML(m){
+  const ratio = v => v.n ? `${v.g} / ${v.n}` : '', pc = v => v.n ? Math.round(100*v.g/v.n)+'%' : '', z = n => n || '';
+  const pmCell = r => !r.any ? '<td></td>' : `<td class="pm ${r.pm>0?'up':r.pm<0?'down':'zero'}">${r.pm>0?'+':''}${r.pm}</td>`;
+  const cells = r => `<td>${ratio(r.sh)}</td><td class="pc">${pc(r.sh)}</td><td>${ratio(r.m7)}</td><td class="pc">${pc(r.m7)}</td><td>${z(r.p2)}</td><td>${z(r.p7)}</td><td class="mb">${z(r.mb)}</td><td>${z(r.r2)}</td><td>${z(r.r7)}</td>${pmCell(r)}`;
+  const empty = {sh:{g:0,n:0}, m7:{g:0,n:0}, p2:0, p7:0, mb:0, r2:0, r7:0, pm:0, any:false};
+  const table = s => {
+    const T = sideTeam(m,s), rows = computePlayers(m, UI.aHalf, s);
+    const list = [...roster(m,s), ...T.players.filter(p=>p.active===false && rows[p.id])];
+    let body = list.map(p=>`<tr class="${p.gk?'gkr':''}"><td class="pl"><span class="num">${p.num}</span> ${esc(p.name)}${p.gk?' <small>GK</small>':''}</td>${cells(rows[p.id]||empty)}</tr>`).join('');
+    if(rows['?']) body += `<tr><td class="pl"><span class="num">?</span> Unknown</td>${cells(rows['?'])}</tr>`;
+    const tot = Object.values(rows).reduce((a,r)=>({sh:{g:a.sh.g+r.sh.g,n:a.sh.n+r.sh.n}, m7:{g:a.m7.g+r.m7.g,n:a.m7.n+r.m7.n}, p2:a.p2+r.p2, p7:a.p7+r.p7, mb:a.mb+r.mb, r2:a.r2+r.r2, r7:a.r7+r.r7, pm:a.pm+r.pm, any:a.any||r.any}), {...empty, sh:{g:0,n:0}, m7:{g:0,n:0}});
+    return `<section class="ptab" style="--tc:${esc(T.color)}"><div class="ptab-h">${esc(T.name)}</div><div class="tw"><table class="pt pp">
+      <thead><tr><th rowspan="2" class="pl">Player</th><th colspan="2">Shots (no 7m)</th><th colspan="2">7m</th><th colspan="2">Provoked</th><th rowspan="2">MB</th><th colspan="2">Received</th><th rowspan="2">+/−</th></tr>
+      <tr><th>Ratio</th><th>%</th><th>Ratio</th><th>%</th><th>2'</th><th>7m</th><th>2'</th><th>7m</th></tr></thead>
+      <tbody>${body}</tbody><tfoot><tr><td class="pl">TOTAL</td>${cells(tot)}</tr></tfoot></table></div></section>`; };
+  return `<div class="ptabs">${table('L')}${table('R')}</div>
+    <p class="foot-note">+/− = positive actions − negative actions. Positive: goal (7m included), 7m provoked, 2' provoked. Negative: missed shot or 7m (save, post, out, block), turnover (MB), 2' received, 7m committed. Shots include C/C.</p>`;
+}
 /* ===================== setup (page 1) ===================== */
 function setupHTML(){
   const live = DB.matches.filter(m=>m.status==='live').reverse(), done = DB.matches.filter(m=>m.status!=='live').reverse();
@@ -757,7 +883,7 @@ function setupHTML(){
   const trow = t => `<div class="li"><span class="dot" style="background:${esc(t.color)}"></span><div class="main"><div class="t1">${esc(t.name)} <span style="color:var(--muted);font-weight:500">${esc(t.abbr)}</span>${t.own?' <span class="badge">Our club</span>':''}</div><div class="t2">${t.players.filter(p=>p.active!==false).length} players · ${t.players.filter(p=>p.gk&&p.active!==false).length} GK</div></div><button class="mini" data-act="edit-team" data-v="${t.id}">Edit</button></div>`;
   const th = DB.settings.theme || 'light';
   const tb = (v,l) => `<button data-act="theme" data-v="${v}" aria-pressed="${th===v}">${l}</button>`;
-  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?"0.3":"0.3 preview"}</span>
+  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?"0.5":"0.5 preview"}</span>
       ${match()&&match().status==='live'?`<button class="tb primary" data-act="open-match" data-v="${UI.matchId}" style="margin-left:auto">Back to bench →</button>`:''}</header>
     <div class="setup"><div class="setup-in">
       <div style="display:flex;flex-direction:column;gap:18px">
@@ -784,8 +910,9 @@ function closeModal(){ UI.modal = null; renderModal(); }
 function renderModal(){
   const host = document.getElementById('modal-host'), M = UI.modal;
   if(!M){ host.innerHTML=''; return; }
-  const map = {team:teamModal, newmatch:newMatchModal, log:logModal, edit:editModal, export:exportModal, import:importModal, confirm:confirmModal, info:infoModal, score:scoreModal};
+  const map = {team:teamModal, newmatch:newMatchModal, log:logModal, edit:editModal, export:exportModal, import:importModal, confirm:confirmModal, info:infoModal, score:scoreModal, zoom:zoomModal};
   host.innerHTML = `<div class="scrim" data-act="scrim">${map[M.type](M)}</div>`;
+  scrollChronos();
 }
 const mShell = (title,body,foot,wide) => `<div class="modal ${wide?'wide':''}" role="dialog" aria-label="${esc(title)}"><div class="m-head"><h2>${esc(title)}</h2><button class="mini" data-act="close-modal">✕</button></div><div class="m-body">${body}</div>${foot?`<div class="m-foot">${foot}</div>`:''}</div>`;
 
@@ -842,6 +969,7 @@ function editFields(d){
     if(SHOT.includes(d.res)||TURN.includes(d.res)||d.res==='7M'||d.res==='2MIN') f.push('p');
     if(SHOT.includes(d.res)) f.push('zone','gk');
     if(['7M','2MIN',...FOULS].includes(d.res)) f.push('opp');
+    if(d.res==='7M' && !isTrans(d.phase)) f.push('zone');
     if(d.res==='SFOUL') f.push('gk');
     if(d.res==='2MIN') f.push('min','sec');
     return f;
@@ -875,7 +1003,7 @@ function cleanEvent(d){
   const keep = new Set(['id','kind','side','half',...editFields(d)]);
   Object.keys(d).forEach(k=>{ if(!keep.has(k)) delete d[k]; });
   if(d.kind==='poss' && SHOT.includes(d.res) && isCC(d.zone)) delete d.gk;
-  if(d.kind==='poss' && SHOT.includes(d.res)){ const ok = isTrans(d.phase) ? ['L','C','R','CCL','CCC','CCR'] : POS_ZONES.map(z=>z[1]); if(!ok.includes(d.zone)) d.zone = ok[0]; }
+  if(d.kind==='poss' && keep.has('zone')){ const ok = isTrans(d.phase) ? ['L','C','R','CCL','CCC','CCR'] : POS_ZONES.map(z=>z[1]); if(!ok.includes(d.zone)) d.zone = ok[0]; }
   ['p','opp'].forEach(k=>{ if(keep.has(k) && d[k]===undefined) d[k]='?'; });
   ['min','sec'].forEach(k=>{ if(keep.has(k) && d[k]===undefined) d[k]=0; });
   return d;
@@ -905,6 +1033,14 @@ function importModal(){
 }
 function confirmModal(M){
   return mShell(M.title, `<p style="margin:0;line-height:1.5">${esc(M.text)}</p>`, `<button class="tb" data-act="close-modal">Cancel</button><button class="tb primary" ${M.danger?'style="background:var(--red);border-color:var(--red)"':''} data-act="${M.ok}" data-v="${esc(M.v||'')}">${esc(M.okLabel)}</button>`);
+}
+function zoomModal(M){
+  const m = match(), s = M.side, T = sideTeam(m,s);
+  const title = {court:'Positional shots', fb:'Fastbreak & after-goal shots', chrono:'Possessions'}[M.what];
+  const body = M.what==='court' ? courtHTML(m,s) : M.what==='fb' ? fbMapHTML(m,s) : chronoHTML(m,s);
+  const legend = M.what==='chrono' ? '<p class="hint">Red: goal, 7m or 2\' provoked · Blue: missed shot or turnover · Black: fastbreak stopped (Stop FB, foul). The thick vertical line marks the start of the 2nd half.</p>'
+    : '<p class="hint">Red: goal · Blue: no goal' + (M.what==='court' ? ' · Black: 7m provoked' : '') + '</p>';
+  return mShell(`${T.name} · ${title}`, `<div class="zoom">${body}</div>${legend}`, '', 'x').replace('class="modal wide"', 'class="modal xwide"');
 }
 function infoModal(M){ return mShell(M.title, `<p style="margin:0;line-height:1.5">${esc(M.text)}</p>`, `<button class="tb primary" data-act="close-modal">OK</button>`); }
 
@@ -955,17 +1091,24 @@ document.addEventListener('click', ev=>{
     case 'flow-cancel': UI.flow=null; render(); break;
     case 'sanc': UI.sanc = UI.sanc===side ? null : side; render(); break;
     case 'gk': m.activeGk[side] = v; save(); render(); toast(`${sideTeam(m,side).abbr} goalkeeper in goal: ${pName(m,side,v)}`); break;
-    case 'half': m.half = Number(v); UI.flow=null; save(); render(); toast(m.half===1?'1st half':'2nd half started'); break;
+    case 'half': { if(Number(v)===m.half) break;
+      const n2 = m.events.filter(e=>e.half===2).length;
+      if(Number(v)===2) openModal('confirm',{title:'Start the 2nd half?',text:'New actions will be registered in the 2nd half.',ok:'half-go',okLabel:'Start 2nd half',v});
+      else openModal('confirm',{title:'Go back to the 1st half?',text:`New actions will be registered in the 1st half again.${n2?` The ${n2} actions already registered in the 2nd half stay there; you can move any of them in Actions → Edit.`:''}`,ok:'half-go',okLabel:'Back to 1st half',v});
+      break; }
+    case 'half-go': m.half = Number(v); UI.flow=null; save(); closeModal(); render(); toast(m.half===1?'Back to the 1st half':'2nd half started'); break;
     case 'undo': { if(!m || ro(m) || !m.events.length) break; const e = m.events.pop(); save(); render(); toast(`Undone: ${sideTeam(m,e.side).abbr} · ${describe(m,e)}`); break; }
     case 'log': openModal('log'); break;
     case 'analysis': UI.analysis = true; UI.flow=null; UI.sanc=null; render(); break;
     case 'analysis-close': UI.analysis = false; render(); break;
     case 'ahalf': UI.aHalf = v; render(); break;
+    case 'atab': UI.aTab = v; render(); break;
     case 'go-setup': UI.view='setup'; UI.flow=null; UI.analysis=false; UI.sanc=null; render(); break;
     case 'open-match': UI.matchId = v; UI.view='match'; UI.analysis=false; UI.flow=null; UI.sanc=null; render(); break;
     case 'close-modal': closeModal(); break;
+    case 'zoom': if(b.closest('.zoom')) break; openModal('zoom',{side, what:v}); break;
     case 'timer-start': m.breakEnd = Date.now() + BREAK_MS; save(); render(); toast("Half-time countdown started · 15'"); break;
-    case 'timer-ask': openModal('confirm',{title:'Stop the countdown?',text:'The half-time countdown will stop and the stopwatch button comes back.',ok:'timer-stop',okLabel:'Stop countdown'}); break;
+    case 'timer-ask': openModal('confirm',{title:'Half-time timer',text:'Do you want to reset the timer?',ok:'timer-stop',okLabel:'Reset timer'}); break;
     case 'timer-stop': m.breakEnd = null; save(); closeModal(); render(); break;
     case 'score': openModal('score',{draft:{...(m.scoreAdj||{L:0,R:0})}}); break;
     case 'sadj': { const d = UI.modal.draft, raw = rawScore(m); const nv = d[side] + Number(v); if(raw[side]+nv >= 0) d[side] = nv; renderModal(); break; }
@@ -1078,7 +1221,7 @@ function seed(){
       const e = {kind:'poss', side, half, phase, res};
       if(SHOT.includes(res)){ e.p = pick(field(side)); e.zone = isTrans(phase) ? (rnd()<.1?pick(['CCL','CCC','CCR']):pick(['L','C','R'])) : pick(POS_ZONES)[1]; if(!isCC(e.zone)) e.gk = m.activeGk[o]; }
       else if(TURN.includes(res)) e.p = pick(field(side));
-      else if(res==='7M'||res==='2MIN'){ e.p = pick(field(side)); e.opp = pick(field(o)); if(res==='2MIN'){ e.min = half===1?8+i%20:32+i%25; e.sec = Math.floor(rnd()*60); } }
+      else if(res==='7M'||res==='2MIN'){ e.p = pick(field(side)); e.opp = pick(field(o)); if(res==='7M' && !isTrans(phase)) e.zone = pick(POS_ZONES)[1]; if(res==='2MIN'){ e.min = half===1?8+i%20:32+i%25; e.sec = Math.floor(rnd()*60); } }
       else if(FOULS.includes(res)){ e.opp = pick(field(o)); if(res==='SFOUL') e.gk = m.activeGk[o]; }
       push(e);
       if(res==='7M') push({kind:'p7', side, half, res:rnd()<.72?'GOAL':pick(['SAVE','POST','OUT']), p:pick(field(side)), gk:m.activeGk[o]});
@@ -1086,6 +1229,7 @@ function seed(){
       if(half===1 && i===11) push({kind:'yc', side:'L', half, p:'w22', min:14, sec:5});
       if(half===1 && i===14) push({kind:'to', side:'R', half, min:17, sec:42});
       if(half===2 && i===9){ m.activeGk.L = 'w16'; }
+      if(half===2 && [2,7,12].includes(i)) push({kind:'pen2', side:'R', half, p:'r8', opp:pick(field('L')), min:33+i*2, sec:15});
       if(half===2 && i===n-3) push({kind:'out3', side:'L', half, p:'w9'});
       const cont = (['SAVE','POST','BLOCK'].includes(res) && rnd()<.25) || FOULS.includes(res) || res==='STOPFB' || res==='2MIN';
       if(!cont) side = other(side);
