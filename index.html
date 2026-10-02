@@ -16,7 +16,7 @@ html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bott
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0} img{max-width:100%} [hidden]{display:none!important}
 </style>
-<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.5.0';</script>
+<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.5.1';</script>
 <title>Bench Live Stats</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -404,7 +404,8 @@ function load(){
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){} }
 function migrate(o){
   o.settings = o.settings || {theme:'light'};
-  o.teams.forEach(t=>t.players.forEach(p=>{ if(!p.id) p.id = 'n'+p.num; if(p.active===undefined) p.active = true; }));
+  o.teams.forEach(t=>{ const seen = new Set(t.players.map(p=>p.id).filter(Boolean));
+    t.players.forEach(p=>{ if(!p.id){ let id = 'n'+p.num; while(seen.has(id)) id += 'b'; p.id = id; seen.add(id); } if(p.active===undefined) p.active = true; }); });
   const fix = v => typeof v==='number' ? 'n'+v : v;
   o.matches.forEach(m=>{
     if(!m.date) m.date = new Date(m.created||Date.now()).toISOString().slice(0,10);
@@ -883,7 +884,7 @@ function setupHTML(){
   const trow = t => `<div class="li"><span class="dot" style="background:${esc(t.color)}"></span><div class="main"><div class="t1">${esc(t.name)} <span style="color:var(--muted);font-weight:500">${esc(t.abbr)}</span>${t.own?' <span class="badge">Our club</span>':''}</div><div class="t2">${t.players.filter(p=>p.active!==false).length} players · ${t.players.filter(p=>p.gk&&p.active!==false).length} GK</div></div><button class="mini" data-act="edit-team" data-v="${t.id}">Edit</button></div>`;
   const th = DB.settings.theme || 'light';
   const tb = (v,l) => `<button data-act="theme" data-v="${v}" aria-pressed="${th===v}">${l}</button>`;
-  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?"0.5":"0.5 preview"}</span>
+  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?"0.5.1":"0.5.1 preview"}</span>
       ${match()&&match().status==='live'?`<button class="tb primary" data-act="open-match" data-v="${UI.matchId}" style="margin-left:auto">Back to bench →</button>`:''}</header>
     <div class="setup"><div class="setup-in">
       <div style="display:flex;flex-direction:column;gap:18px">
@@ -1068,8 +1069,18 @@ function exportFile(obj,name){
 function mergeImport(obj){
   const teams = obj.teams || [], matches = obj.matches || (obj.match ? [obj.match] : []);
   if(!teams.length && !matches.length) throw new Error('This file has no teams or matches.');
-  teams.forEach(t=>{ const i = DB.teams.findIndex(x=>x.id===t.id); if(i>=0) DB.teams[i]=t; else DB.teams.push(t); });
   matches.forEach(mt=>{ const i = DB.matches.findIndex(x=>x.id===mt.id); if(i>=0) DB.matches[i]=mt; else DB.matches.push(mt); });
+  const used = usedPlayerIds();
+  teams.forEach(t=>{
+    if(!t || !t.id || !Array.isArray(t.players)) throw new Error('A team in this file is incomplete.');
+    t.players.forEach(p=>{ if(p.active===undefined) p.active = true; });
+    const i = DB.teams.findIndex(x=>x.id===t.id);
+    if(i>=0){ // updating a roster: players used in past matches stay as former players
+      const keep = DB.teams[i].players.filter(o=>!t.players.some(n=>n.id===o.id) && used.has(o.id)).map(o=>({...o, active:false}));
+      DB.teams[i] = {...t, players:[...t.players, ...keep]};
+    } else DB.teams.push(t);
+    if(t.own) DB.teams.forEach(x=>{ if(x.id!==t.id) x.own = false; });
+  });
   DB = migrate(DB); save(); return {t:teams.length, m:matches.length};
 }
 function usedPlayerIds(){
