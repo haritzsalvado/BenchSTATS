@@ -1,0 +1,6 @@
+BENCH LIVE STATS · v0.3.0
+
+Puja TOTS aquests fitxers (index.html, manifest.webmanifest, sw.js i la carpeta icons)
+a l'arrel del repositori de GitHub Pages, sense canviar-ne els noms.
+Per actualitzar l'app, substitueix els fitxers per la nova versió a la mateixa adreça.
+Les dades dels partits es guarden només a la tablet: fes una còpia JSON després de cada partit.
