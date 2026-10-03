@@ -16,7 +16,7 @@ html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bott
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0} img{max-width:100%} [hidden]{display:none!important}
 </style>
-<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.6.0';</script>
+<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.7.0';</script>
 <title>Bench Live Stats</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -74,6 +74,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .seg button[aria-pressed="true"]{background:var(--fg);color:var(--card)}
 .badge{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:5px;background:var(--card2);border:1px solid var(--line);color:var(--muted)}
 .badge.live{color:var(--red);border-color:var(--red)}
+.badge.view{color:#1b1400;background:var(--sf);border-color:var(--sf)}
+.seg button.viewing[aria-pressed="true"]{background:var(--sf);color:#1b1400}
+.console.viewing .panel{box-shadow:0 0 0 2px var(--sf)}
 
 /* console */
 .console{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:0}
@@ -155,8 +158,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .ch-labels{display:grid;grid-template-rows:15px repeat(5,21px);flex:none}
 .ch-labels span{font-family:var(--f-disp);font-weight:700;font-size:11px;color:var(--muted);padding-right:6px;display:flex;align-items:center}
 .ch-scroll{overflow-x:auto;flex:1;min-width:0}
-.ch-grid{display:grid;grid-auto-flow:column;grid-template-rows:15px repeat(5,21px);grid-auto-columns:minmax(24px,max-content)}
-.ch-grid > div{border-left:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--f-num);font-size:11px;font-weight:700;white-space:nowrap;padding:0 2px}
+.ch-grid{display:grid;grid-auto-flow:column;grid-template-rows:15px repeat(5,21px);grid-auto-columns:max-content}
+.ch-grid > div{border-left:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--f-num);font-size:11px;font-weight:700;white-space:nowrap;padding:0 2px;min-width:24px}
+.ch-grid > div.tom{min-width:5px;width:5px;padding:0;background:var(--mc);border:0}
+.ch-grid > div.plm{min-width:0;padding:0 2px;border-left:2px dashed var(--mc);color:var(--mc);font-size:9px}
+.pv{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:2px}
 .ch-grid .hn{font-size:9px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--line)}
 .ch-grid .h2{border-left:2px solid var(--fg)}
 .ch-grid .pos{color:var(--red)} .ch-grid .neg{color:var(--blue)} .ch-grid .neu{color:var(--neutral)}
@@ -171,7 +177,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .pb.big{min-height:50px;font-size:24px;border-color:var(--pos);color:var(--pos)}
 .pb.fb{min-height:40px;font-size:17px;border-color:var(--fb);color:var(--fb)}
 .pb.ag{min-height:40px;font-size:17px;border-color:var(--fb);color:var(--fb);border-style:dashed}
-.extras{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.extras{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.pb.plb{font-size:15px}
+.pb.psv{font-size:14px;border-style:dashed}
+.pb.psv.on{background:var(--sf);border-color:var(--sf);border-style:solid;color:#1b1400}
 .pb.x{min-height:42px;font-size:17px}
 .pb.yc{border-color:var(--yc);color:var(--yc-ink);border-width:3px}
 .pb.rcard{border-color:var(--rc);color:var(--rc);border-width:3px}
@@ -231,8 +240,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .zoom .chrono{padding:8px 0 8px 8px}
 .zoom .ch-labels,.zoom .ch-grid{grid-template-rows:26px repeat(5,44px)}
 .zoom .ch-labels span{font-size:17px;padding-right:10px}
-.zoom .ch-grid{grid-auto-columns:minmax(44px,max-content)}
-.zoom .ch-grid > div{font-size:18px;padding:0 6px}
+.zoom .ch-grid > div{font-size:18px;padding:0 6px;min-width:44px}
+.zoom .ch-grid > div.tom{min-width:8px;width:8px}
+.zoom .ch-grid > div.plm{min-width:0;font-size:13px}
 .zoom .ch-grid .hn{font-size:12px}
 .zoom .ch-grid sub{font-size:11px;top:4px}
 [data-act="zoom"]{cursor:zoom-in}
@@ -256,6 +266,8 @@ textarea{font-family:var(--f-num);font-size:13px;min-height:160px;resize:vertica
 .logi .h{font-size:11px;color:var(--muted)}
 .mini{border:1px solid var(--line);background:var(--card2);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:600;min-height:34px}
 .mini.danger{color:var(--red);border-color:var(--red)}
+.mini.mv{min-width:38px;font-size:13px}
+.mini[disabled]{opacity:.35}
 .sq-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .sq-col{display:flex;flex-direction:column;gap:8px;min-width:0}
 .sq-h{display:flex;align-items:baseline;gap:8px;border-bottom:3px solid var(--tc);padding-bottom:4px}
@@ -338,6 +350,7 @@ table.pp td.pl .num{display:inline-block;min-width:2.2ch;color:var(--muted)}
 table.pp td.pl small{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.06em}
 table.pp tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--card2) 60%,transparent)}
 table.pp td.pm{font-weight:700;font-size:13.5px}
+table.pp .bl{border-left:2px solid var(--line)}
 table.pp td.pm.up{color:var(--red)} table.pp td.pm.down{color:var(--blue)} table.pp td.pm.zero{color:var(--fg)}
 .foot-note{font-size:12px;color:var(--muted);line-height:1.5;max-width:80ch;margin:0}
 
@@ -362,6 +375,39 @@ table.pp td.pm.up{color:var(--red)} table.pp td.pm.down{color:var(--blue)} table
   .thead{flex-wrap:wrap}
   .sanc{flex-basis:100%}
 }
+#print-host{display:none}
+@media print{
+  :root:not(.np), :root[data-theme="dark"]:not(.np){
+    --bg:#ffffff; --card:#ffffff; --card2:#f4f7fb; --line:#cfd8e4; --fg:#0e1a2b; --muted:#5a6a80;
+    --brand:#0a4bb0; --pos:#4c45e0; --fb:#0b8f63; --red:#d01f3a; --blue:#1c58cf; --neutral:#0e1a2b;
+    --yc:#e7b416; --yc-ink:#8a6400; --rc:#d01f3a; --save:#0b8f63; --other:#9aa7b8; --sf:#e08a00; color-scheme:light }
+  @page{size:A4 landscape;margin:8mm}
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important;padding:0!important}
+  #app,#toast-host,#modal-host{display:none!important}
+  #print-host{display:block}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pp{break-after:page;page-break-after:always;display:flex;flex-direction:column;gap:6px}
+  .pp:last-child{break-after:auto;page-break-after:auto}
+  .pp-h{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--fg);padding-bottom:4px;font-family:var(--f-disp);font-size:15px}
+  .pp-h .pp-sub{margin-left:auto;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .pp-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pp-side,.pp-chr{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .pp-tn{font-family:var(--f-disp);font-weight:700;font-size:13px;text-transform:uppercase;color:var(--tc);border-bottom:2px solid var(--tc)}
+  .pp .panel{box-shadow:none}
+  .pp .gkrow{min-height:26px}
+  .pp .zabs{min-height:150px}
+  .pp .ch-scroll{overflow:visible}
+  .pp .ch-grid > div{min-width:19px;font-size:10px}
+  .pp .ch-grid > div.tom{min-width:4px;width:4px}
+  .pp .ch-grid > div.plm{min-width:0}
+  .pp .an-cards{gap:8px} .pp .tc{padding:8px;gap:8px}
+  .pp table.pt{min-width:0;font-size:11px} .pp table.pt th,.pp table.pt td{padding:4px 5px}
+  .pp .ptabs{gap:8px}
+  .pp .foot-note{font-size:9.5px}
+  .pp-team .foot-note{display:none}
+  .pp-team table.pt th,.pp-team table.pt td{padding:3px 5px}
+  .pp-team .tiles .tile{padding:5px 3px}
+}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -370,6 +416,7 @@ table.pp td.pm.up{color:var(--red)} table.pp td.pm.down{color:var(--blue)} table
 <div id="app"></div>
 <div id="toast-host"></div>
 <div id="modal-host"></div>
+<div id="print-host" aria-hidden="true"></div>
 
 <script>
 /* ===================== constants ===================== */
@@ -384,7 +431,7 @@ const isTrans = ph => !!ph && (ph.startsWith('FB') || ph.startsWith('AG'));
 const SHOT = ['GOAL','SAVE','POST','OUT','BLOCK'];
 const TURN = ['PS','PV','W','RC','AF','ST','L','DB','PAS','MB'];
 const FOULS = ['FOUL','SFOUL'];
-const RES_LABEL = {GOAL:'Goal',SAVE:'Save',POST:'Post',OUT:'Out',BLOCK:'Block','7M':'7m','2MIN':"2'",FOUL:'Foul',SFOUL:'Save in foul',STOPFB:'Stop FB'};
+const RES_LABEL = {GOAL:'Goal',SAVE:'Save',POST:'Post',OUT:'Out',BLOCK:'Block','7M':'7m','2MIN':"2'",FOUL:'Foul',SFOUL:'Save in foul',STOPFB:'Stop FB',MB7M:'MB7m'};
 const POSITIVE = new Set(['GOAL','7M','2MIN']);
 const NEUTRAL  = new Set(['FOUL','SFOUL','STOPFB']);
 // a possession always closes on these; fouls close it only in transition (in positional the same team keeps the ball)
@@ -402,7 +449,7 @@ const ZONE_XY = {LW:[7,9], RW:[93,9], PNL:[25,13], PNC:[50,17], PNR:[75,13], PVL
 Object.assign(ZONE_LABEL,{L:'Left',C:'Centre',R:'Right',CCL:'C/C L',CCC:'C/C C',CCR:'C/C R'});
 const isCC = z => !!z && z.startsWith('CC');
 const statsPhase = e => isCC(e.zone) ? 'FB1w' : e.phase;   // C/C counts as FB1w in stats
-const KIND_LABEL = {poss:'Possession',p7:'7m shot',pen2:"2'",foul:'Foul',yc:'Yellow card',rc:'Red card',out3:'Player out (3 attacks)',to:'Time-out'};
+const KIND_LABEL = {poss:'Possession',p7:'7m shot',pen2:"2'",foul:'Foul',yc:'Yellow card',rc:'Red card',out3:'Player out (3 attacks)',to:'Time-out',pl:'Playmaker change'};
 const MONTHS = ['01','02','03','04','05','06','07','08','09','10','11','12'];
 const STOPWATCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="14" r="7.5"/><path d="M12 14V10.5M10 2.5h4M12 2.5v4M18.5 6.5l1.5-1.5"/></svg>';
 
@@ -436,7 +483,7 @@ function migrate(o){
   return o;
 }
 
-const UI = { view:'match', matchId:null, flow:null, analysis:false, aHalf:'T', aTab:'team', modal:null, toastTimer:null, sanc:null };
+const UI = { viewHalf:null, view:'match', matchId:null, flow:null, analysis:false, aHalf:'T', aTab:'team', modal:null, toastTimer:null, sanc:null };
 
 /* ===================== helpers ===================== */
 const team = id => DB.teams.find(t=>t.id===id);
@@ -451,6 +498,7 @@ const player = (m,s,id) => sideTeam(m,s).players.find(p=>p.id===id);
 const dn = (m,s,id) => { if(id==null||id==='?') return '?'; const p = player(m,s,id); return p ? String(p.num) : '?'; };
 const pName = (m,s,id) => { if(id==null||id==='?') return 'Unknown'; const p = player(m,s,id); return p ? `#${p.num} ${p.name}` : 'Unknown'; };
 const ro = m => m.status !== 'live';
+const vh = m => UI.viewHalf ?? m.half;   // half shown on the bench (maps, timeline, goalkeepers)
 const fullCode = m => (m.date ? m.date+' ' : '') + m.code;
 const ownTeam = () => DB.teams.find(t=>t.own);
 const tmStr = e => e.min!=null ? `${two(e.min)}:${two(e.sec??0)}` : '';
@@ -475,6 +523,7 @@ function describe(m,e){
     case 'rc': return `Red card · ${pn(e.p)}`+t();
     case 'out3': return `Player out · ${pn(e.p)}`;
     case 'to': return `Time-out`+t();
+    case 'pl': return `Playmaker change · ${pn(e.p)}`;
   }
   return e.kind;
 }
@@ -498,11 +547,11 @@ function computeStats(m, half){
   for(const s of ['L','R']){
     const o = other(s);
     const ph = {}; ALL_PH.forEach(p=>ph[p]={pos:0,good:0,mb:0});
-    fin.filter(e=>e.side===s).forEach(e=>{ const p = ph[statsPhase(e)]; if(!p) return; p.pos++; if(POSITIVE.has(e.res)) p.good++; });
+    fin.filter(e=>e.side===s && !(isTrans(e.phase) && NEUTRAL.has(e.res))).forEach(e=>{ const p = ph[statsPhase(e)]; if(!p) return; p.pos++; if(POSITIVE.has(e.res)) p.good++; });
     ev.filter(e=>e.kind==='poss' && e.side===s && TURN.includes(e.res)).forEach(e=>{ ph[e.phase].mb++; });
     const sum = list => list.reduce((a,k)=>({pos:a.pos+ph[k].pos,good:a.good+ph[k].good,mb:a.mb+ph[k].mb}),{pos:0,good:0,mb:0});
     const shots = ev.filter(e=>e.kind==='poss' && e.side===s && SHOT.includes(e.res));
-    const p7 = ev.filter(e=>e.kind==='p7' && e.side===s);
+    const p7 = ev.filter(e=>e.kind==='p7' && e.side===s && e.res!=='MB7M');
     const rebs = p7.filter(e=>e.reb);
     const goals = shots.filter(e=>e.res==='GOAL').length + p7.filter(e=>e.res==='GOAL').length + rebs.filter(e=>e.reb==='GOAL').length;
     const twoMin = ev.filter(e=>e.kind==='pen2' && e.side===s).length + ev.filter(e=>e.kind==='poss' && e.side===o && e.res==='2MIN').length;
@@ -548,7 +597,7 @@ function attacks(m){
     a.end = a.last;   // the 7m throw belongs to the attack that provoked it
     for(let i=a.last+1;i<nextFirst;i++){ const e = m.events[i]; if(e.kind==='p7' && e.side===a.side) a.end = i; }
     const le = m.events[a.end];
-    const lost = (le.kind==='poss' && (le.res==='GOAL' || le.res==='OUT' || TURN.includes(le.res))) || (le.kind==='p7' && ['GOAL','SAVE','OUT'].includes(le.reb || le.res));
+    const lost = (le.kind==='poss' && (le.res==='GOAL' || le.res==='OUT' || TURN.includes(le.res))) || (le.kind==='p7' && ['GOAL','SAVE','OUT','MB7M'].includes(le.reb || le.res));
     a.complete = k < out.length-1 || a.half < m.half || lost;
   });
   return out;
@@ -562,7 +611,7 @@ function outs(m,s){
 // marks used in the possession timeline and in the player-out detail
 const markCls = e => POSITIVE.has(e.res) ? 'pos' : NEUTRAL.has(e.res) ? 'neu' : 'neg';
 function markTxt(m,s,e){ const own = esc(dn(m,s,e.p)), opp = esc(dn(m,other(s),e.opp));
-  if(SHOT.includes(e.res)) return own;
+  if(SHOT.includes(e.res)) return e.passive ? `<span class="pv">${own}</span>` : own;
   if(TURN.includes(e.res)) return `${e.res}<sub>${own}</sub>`;
   if(e.res==='7M') return `7m<sub>${own}</sub>`;
   if(e.res==='2MIN') return `2'<sub>${own}</sub>`;
@@ -580,7 +629,7 @@ function applyTheme(){
 function render(){
   const app = document.getElementById('app');
   const m = match();
-  if(UI.view==='match' && m){ app.innerHTML = topBar(m) + `<main class="console">${halfHTML(m,'L')}${halfHTML(m,'R')}</main>` + (UI.analysis ? analysisHTML(m) : ''); scrollChronos(); }
+  if(UI.view==='match' && m){ app.innerHTML = topBar(m) + `<main class="console ${UI.viewHalf?'viewing':''}">${halfHTML(m,'L')}${halfHTML(m,'R')}</main>` + (UI.analysis ? analysisHTML(m) : ''); scrollChronos(); }
   else { UI.view='setup'; app.innerHTML = setupHTML(); }
   renderModal();
 }
@@ -601,8 +650,8 @@ function topBar(m){
       </button>${timerHTML(m)}
     </div>
     <div class="seg" role="group" aria-label="Half">
-      <button data-act="half" data-v="1" aria-pressed="${m.half===1}" ${lock?'disabled':''}>1st half</button>
-      <button data-act="half" data-v="2" aria-pressed="${m.half===2}" ${lock?'disabled':''}>2nd half</button>
+      <button data-act="half" data-v="1" class="${UI.viewHalf?'viewing':''}" aria-pressed="${vh(m)===1}" ${lock && m.half===1?'disabled':''}>1st half</button>
+      <button data-act="half" data-v="2" aria-pressed="${vh(m)===2}" ${lock && m.half===1?'disabled':''}>2nd half</button>
     </div>
     <button class="tb" data-act="undo" ${lock||!m.events.length?'disabled':''}>↶ Undo</button>
     <button class="tb" data-act="squad">Squad</button>
@@ -615,7 +664,9 @@ function topBar(m){
 function halfHTML(m,s){
   const T = sideTeam(m,s), lock = ro(m);
   const tos = m.events.filter(e=>e.kind==='to' && e.side===s).length;
-  let toB = ''; for(let i=0;i<3;i++) toB += `<button class="tobox ${i<tos?'used':''}" data-act="to" data-side="${s}" ${lock||tos>=3?'disabled':''} aria-label="Time-out ${i+1}${i<tos?' used':''}"></button>`;
+  let toB = ''; for(let i=0;i<3;i++) toB += i<tos
+    ? `<button class="tobox used" data-act="to-del" data-side="${s}" data-v="${i}" ${lock?'disabled':''} aria-label="Time-out ${i+1} used, tap to delete"></button>`
+    : `<button class="tobox" data-act="to" data-side="${s}" ${lock?'disabled':''} aria-label="Time-out ${i+1}"></button>`;
   const ph = (list,cls) => list.map(p=>`<button class="pb ${cls}" data-act="phase" data-side="${s}" data-v="${p}" ${lock?'disabled':''}>${PH_LABEL[p]}</button>`).join('');
   const x = (act,label,cls='') => `<button class="pb x ${cls}" data-act="${act}" data-side="${s}" ${lock?'disabled':''}>${label}</button>`;
   return `<section class="half ${s}" style="--tc:${esc(T.color)}" aria-label="${esc(T.name)}">
@@ -625,7 +676,7 @@ function halfHTML(m,s){
     <div class="maps">${courtHTML(m,s)}${fbMapHTML(m,s)}</div>
     ${chronoHTML(m,s)}
     <div class="pad">${ph(POS_PH,'big')}${ph(FB_PH,'fb')}${ph(AG_PH,'ag')}</div>
-    <div class="extras">${x('foul','F')}${x('out3','✚')}${x('yc','YC','yc')}${x('rc','RC','rcard')}${x('pen2',"2'")}${x('p7','7m')}</div>
+    <div class="extras">${T.own ? x('pl','PL⇄PL','plb') : '<span></span>'}${x('out3','✚')}${x('yc','YC','yc')}${x('rc','RC','rcard')}${x('pen2',"2'")}${x('p7','7m')}${x('passive', m.passive?.[s] ? 'PASSIVE<small>ON</small>' : 'PASSIVE', 'psv'+(m.passive?.[s]?' on':''))}</div>
     ${UI.flow && UI.flow.side===s ? flowHTML(m) : ''}
   </section>`;
 }
@@ -646,7 +697,7 @@ function sancPop(m,s){
     const ats = x.list.map((a,k)=>{
       const marks = fin.filter(f=>{ const i = m.events.indexOf(f); return f.side===s && i>=a.first && i<=a.last; })
         .map(f=>`<span class="mk2 ${markCls(f)}">${markTxt(m,s,f)}</span>`).join(' ');
-      const p7 = m.events.slice(a.last+1, a.end+1).filter(e=>e.kind==='p7' && e.side===s).map(e=>`<span class="mk2 ${e.res==='GOAL'?'pos':'neg'}">7m ${e.res==='GOAL'?'✓':'✗'}</span>` + (e.reb ? ` <span class="mk2 ${e.reb==='GOAL'?'pos':'neg'}">reb ${e.reb==='GOAL'?'✓':'✗'}</span>` : '')).join(' ');
+      const p7 = m.events.slice(a.last+1, a.end+1).filter(e=>e.kind==='p7' && e.side===s).map(e=>`<span class="mk2 ${e.res==='GOAL'?'pos':'neg'}">${e.res==='MB7M'?'MB7m':'7m '+(e.res==='GOAL'?'✓':'✗')}</span>` + (e.reb ? ` <span class="mk2 ${e.reb==='GOAL'?'pos':'neg'}">reb ${e.reb==='GOAL'?'✓':'✗'}</span>` : '')).join(' ');
       return `<span class="at"><b>${k+1}</b>${marks}${p7?' '+p7:''}${a.complete?'':' <span class="open">in progress</span>'}</span>`; }).join('');
     return `<div class="sp-r"><span class="o3 ${x.n>=3?'ok':''}" style="padding:2px 4px">✚</span><span>${esc(pName(m,s,x.e.p))}</span><span class="ty">Player out</span><span class="tm">${x.n>=3?'can return':x.n+'/3 attacks'}</span><span></span></div>`
       + `<div class="o3d">${ats || '<span class="open">No attack yet since he went out</span>'}</div>`; }).join('');
@@ -654,15 +705,15 @@ function sancPop(m,s){
     <div class="sp-h"><b>Sanctions · ${esc(sideTeam(m,s).abbr)}</b><button class="mini" data-act="sanc" data-side="${s}">✕ Close</button></div>
     <div class="sp-b">${rows || '<p class="hint" style="padding:8px 0">No sanctions yet.</p>'}</div></div>`;
 }
-function gkHTML(m,s){
+function gkHTML(m,s,h=vh(m)){
   const o = other(s), gks = gkList(m,s);
   if(!gks.length) return `<div class="panel hint" style="padding:8px">No goalkeeper in this roster. Mark players as GK in the team editor.</div>`;
   const act = m.activeGk[s];
   return `<div class="gks">${gks.map(g=>{
     // field shots faced, plus shots after a 7m rebound (shown as normal shots)
-    const seqEv = m.events.filter(e=>e.gk===g.id && e.side===o && ((e.kind==='poss' && ((SHOT.includes(e.res) && !isCC(e.zone)) || e.res==='SFOUL')) || (e.kind==='p7' && e.reb)))
+    const seqEv = m.events.filter(e=>e.half===h && e.gk===g.id && e.side===o && ((e.kind==='poss' && ((SHOT.includes(e.res) && !isCC(e.zone)) || e.res==='SFOUL')) || (e.kind==='p7' && e.reb)))
       .map(e=>e.kind==='p7' ? {res:e.reb} : e);
-    const p7 = m.events.filter(e=>e.kind==='p7' && e.side===o && e.gk===g.id);
+    const p7 = m.events.filter(e=>e.half===h && e.kind==='p7' && e.side===o && e.gk===g.id && e.res!=='MB7M');
     let sv=0, gl=0, sf=0; seqEv.forEach(e=>{ if(e.res==='SAVE')sv++; if(e.res==='GOAL')gl++; if(e.res==='SFOUL')sf++; });
     let s7=0, n7=0; p7.forEach(e=>{ if(e.res==='SAVE'||e.res==='POST'){s7++;n7++;} if(e.res==='GOAL') n7++; });
     const mk = e => `<i class="mk ${e.res==='SAVE'?'s':e.res==='GOAL'?'g':e.res==='SFOUL'?'sf':''}" title="${RES_LABEL[e.res]}"></i>`;
@@ -674,32 +725,34 @@ function gkHTML(m,s){
       <span class="gkact">${on?'in goal':''}</span>
     </button>`; }).join('')}</div>`;
 }
-function chipsFor(m,s,list){ return list.map(e=>`<span class="chip ${e.res==='GOAL'?'g':e.res==='7M'?'k':'n'}" title="${esc(describe(m,e))}">${esc(dn(m,s,e.p))}</span>`).join(''); }
+function chipsFor(m,s,list){ return list.map(e=>`<span class="chip ${e.res==='GOAL'?'g':e.res==='7M'?'k':'n'}${e.passive?' pv':''}" title="${esc(describe(m,e))}">${esc(dn(m,s,e.p))}</span>`).join(''); }
 function courtSVG(){
   return `<svg class="bg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
     <path d="M14 0 Q14 30 50 30 Q86 30 86 0" fill="none" stroke="var(--fg)" stroke-width=".8" vector-effect="non-scaling-stroke"/>
     <path d="M2 0 Q4 58 50 58 Q96 58 98 0" fill="none" stroke="var(--muted)" stroke-width=".8" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
     <rect x="42" y="0" width="16" height="3" fill="var(--fg)"/></svg>`;
 }
-function courtHTML(m,s){
-  const shots = m.events.filter(e=>e.kind==='poss' && e.side===s && (SHOT.includes(e.res) || (e.res==='7M' && e.zone)) && !isTrans(e.phase));
+function courtHTML(m,s,h=vh(m)){
+  const shots = m.events.filter(e=>e.half===h && e.kind==='poss' && e.side===s && (SHOT.includes(e.res) || (e.res==='7M' && e.zone)) && !isTrans(e.phase));
   const cells = POS_ZONES.map(([a,code])=>{ const xy = ZONE_XY[code], list = shots.filter(e=>e.zone===code);
     return list.length ? `<div class="za" style="left:${xy[0]}%;top:${xy[1]}%">${chipsFor(m,s,list)}</div>` : ''; }).join('');
   return `<div class="panel court" data-act="zoom" data-v="court" data-side="${s}" aria-label="Positional shot map, tap to enlarge">${courtSVG()}<div class="zabs">${cells}</div></div>`;
 }
-function fbMapHTML(m,s){
-  const shots = m.events.filter(e=>e.kind==='poss' && e.side===s && SHOT.includes(e.res) && isTrans(e.phase));
+function fbMapHTML(m,s,hv=vh(m)){
+  const shots = m.events.filter(e=>e.half===hv && e.kind==='poss' && e.side===s && SHOT.includes(e.res) && isTrans(e.phase));
   const rows = [['1w',e=>e.phase==='FB1w'&&!isCC(e.zone)],['Fl',e=>e.phase==='FBfl'&&!isCC(e.zone)],['2w',e=>e.phase==='FB2w'&&!isCC(e.zone)],['3w',e=>e.phase==='FB3w'&&!isCC(e.zone)],['AG',e=>e.phase.startsWith('AG')&&!isCC(e.zone)],['C/C',e=>isCC(e.zone)]];
   let h = `<span></span><span class="hd">L</span><span class="hd">C</span><span class="hd">R</span>`;
   rows.forEach(([lab,f])=>{ h += `<span class="rl">${lab}</span>`;
     ['L','C','R'].forEach(z=>{ h += `<div class="zc">${chipsFor(m,s,shots.filter(e=>f(e) && (e.zone===z || e.zone==='CC'+z)))}</div>`; }); });
   return `<div class="panel fbmap" data-act="zoom" data-v="fb" data-side="${s}" aria-label="Fastbreak shot map, tap to enlarge">${h}</div>`;
 }
-function chronoHTML(m,s){
-  const o = other(s), fin = finals(m).filter(e=>e.side===s);
+function chronoHTML(m,s,h=vh(m)){
+  const o = other(s), fin = finals(m).filter(e=>e.side===s && e.half===h);
   const rows = ['6x6','7x6','+1','-1','FB'];
   const lab = `<div class="ch-labels"><span></span>${rows.map(r=>`<span>${r}</span>`).join('')}</div>`;
-  if(!fin.length) return `<div class="panel chrono">${lab}<div class="ch-empty">Possessions will appear here, one column each.</div></div>`;
+  // markers: time-outs (both teams, in both timelines) and playmaker changes (own timeline)
+  const markers = m.events.map((e,i)=>({e,i})).filter(x=>x.e.half===h && (x.e.kind==='to' || (x.e.kind==='pl' && x.e.side===s)));
+  if(!fin.length && !markers.length) return `<div class="panel chrono">${lab}<div class="ch-empty">Possessions will appear here, one column each.</div></div>`;
   // a fastbreak stopped (Stop FB / foul) or a possession ending in 2' shares its column with the same team's following possession
   const all = finals(m), cols = [];
   fin.forEach(e=>{
@@ -707,15 +760,21 @@ function chronoHTML(m,s){
     const nextOf = prev ? all[all.indexOf(prev)+1] : null;
     if(prev && nextOf===e && prev.half===e.half && ((isTrans(prev.phase) && NEUTRAL.has(prev.res)) || prev.res==='2MIN')) c.push(e); else cols.push([e]);
   });
+  const items = []; let k = 0;
+  cols.forEach(c=>{ const first = m.events.indexOf(c[0]); while(k<markers.length && markers[k].i<first) items.push({mk:markers[k++].e}); items.push({col:c}); });
+  while(k<markers.length) items.push({mk:markers[k++].e});
   const rowOf = e => isTrans(e.phase) ? 'FB' : e.phase;
-  const clsOf = markCls, txtOf = e => markTxt(m,s,e);
-  let g = '', prevHalf = cols[0][0].half;
-  cols.forEach((c,i)=>{
-    const h2 = c[0].half!==prevHalf ? 'h2' : ''; prevHalf = c[0].half;
-    g += `<div class="hn ${h2}" ${h2?'title="2nd half starts here"':''}>${i+1}</div>` + rows.map(r=>{
+  let g = '', n = 0;
+  items.forEach(it=>{
+    if(it.mk){ const e = it.mk, col = sideTeam(m,e.side).color;
+      if(e.kind==='to'){ g += `<div class="tom" style="--mc:${esc(col)}" title="${esc(sideTeam(m,e.side).abbr+' time-out'+(e.min!=null?' · '+tmStr(e):''))}"></div>` + rows.map(()=>`<div class="tom" style="--mc:${esc(col)}"></div>`).join(''); }
+      else { g += `<div class="plm hn" style="--mc:${esc(col)}" title="${esc(describe(m,e))}">⇄${esc(dn(m,s,e.p))}</div>` + rows.map(()=>`<div class="plm" style="--mc:${esc(col)}"></div>`).join(''); }
+      return; }
+    const c = it.col; n++;
+    g += `<div class="hn">${n}</div>` + rows.map(r=>{
       const here = c.filter(e=>rowOf(e)===r);
-      if(!here.length) return `<div class="${h2}"></div>`;
-      return `<div class="${h2} ${clsOf(here[here.length-1])}" title="${esc(here.map(e=>describe(m,e)).join(' | '))}">${here.map(txtOf).join(' ')}</div>`;
+      if(!here.length) return `<div></div>`;
+      return `<div class="${markCls(here[here.length-1])}" title="${esc(here.map(e=>describe(m,e)).join(' | '))}">${here.map(e=>markTxt(m,s,e)).join(' ')}</div>`;
     }).join('');
   });
   return `<div class="panel chrono" data-act="zoom" data-v="chrono" data-side="${s}" aria-label="Possession timeline, tap to enlarge">${lab}<div class="ch-scroll" data-chrono><div class="ch-grid">${g}</div></div></div>`;
@@ -735,6 +794,7 @@ function baseSteps(kind){
     case 'rc':   return [P('own','p','Red card to'), ...TIME];
     case 'out3': return [P('own','p','Player out (3 attacks)')];
     case 'to':   return [...TIME];
+    case 'pl':   return [P('own','p','New playmaker')];
   }
 }
 function afterRes(res, phase){
@@ -764,7 +824,9 @@ function commit(){
   const e = {id:uid(), kind:f.kind, side:f.side, half:m.half, ...f.d};
   if(e.kind==='poss'){
     if(!SHOT.includes(e.res) && !(e.res==='7M' && !isTrans(e.phase))) delete e.zone;
-    if((SHOT.includes(e.res) && !isCC(e.zone)) || e.res==='SFOUL') e.gk = m.activeGk[o] ?? null; }
+    if((SHOT.includes(e.res) && !isCC(e.zone)) || e.res==='SFOUL') e.gk = m.activeGk[o] ?? null;
+    if(SHOT.includes(e.res) && m.passive?.[f.side]) e.passive = true;
+    if(m.passive?.[o]) m.passive[o] = false; }   // the rival has the ball: its passive warning is over
   if(e.kind==='p7') e.gk = m.activeGk[o] ?? null;
   m.events.push(e); UI.flow = null; save(); render();
   const prev = Object.fromEntries(before);
@@ -794,7 +856,7 @@ function flowHTML(m){
       <div class="grp-l">Turnover</div><div class="opts turn">${TURN.map(r=>opt(r,r,'n'+(r==='PV'||r==='AF'?' hl':''), r==='MB'?'others':'')).join('')}</div>`;
   } else if(st.t==='p7res'){
     q = '7m result';
-    body = `<div class="opts res">${['GOAL','SAVE','POST','OUT'].map(r=>opt(r,RES_LABEL[r], r==='GOAL'?'g':'n')).join('')}</div>`;
+    body = `<div class="opts res">${['GOAL','SAVE','POST','OUT'].map(r=>opt(r,RES_LABEL[r], r==='GOAL'?'g':'n')).join('')}${opt('MB7M','MB7m','n','lost (foot fault)')}</div>`;
   } else if(st.t==='reb'){
     q = 'Rebound by the shooter?';
     body = `<div class="opts fbz">${opt('NONE','No rebound','t')}</div>
@@ -862,7 +924,7 @@ function teamHTML(m){
         <tr><th>Eff.</th><th>Eff %</th><th>MB</th><th>Total pos.</th><th class="ph">Phase</th><th>Total pos.</th><th>MB</th><th>Eff %</th><th>Eff.</th></tr></thead>
         <tbody>${rows}</tbody>
         <tfoot>${row('TOTAL', S.L.total, S.R.total)}</tfoot></table></div>
-      <p class="foot-note">Eff. = positive possessions / possessions. Positive = goal, 7m provoked or 2' provoked. A possession that continues (same team taps again after a save, post, out, block or a foul in positional play) is counted once, by its final outcome. C/C shots count as FB 1w. Shoots excludes 7m. GK saves = saves / (saves + goals), without C/C or saves in foul; a 7m on the post counts as a save. Fouls and 2' are those committed/received by the team when defending.</p>
+      <p class="foot-note">Eff. = positive possessions / possessions. Positive = goal, 7m provoked or 2' provoked. A possession that continues (same team taps again after a save, post, out, block or a foul in positional play) is counted once, by its final outcome. A fastbreak stopped with a foul or Stop FB is not counted as a possession. C/C shots count as FB 1w. Shoots excludes 7m. GK saves = saves / (saves + goals), without C/C or saves in foul; a 7m on the post counts as a save. Fouls and 2' are those committed/received by the team when defending.</p>
 `;
 }
 
@@ -878,7 +940,8 @@ function computePlayers(m, half, s){
       else if(e.res==='2MIN') get(e.p).p2++;
     }
     if(e.kind==='poss' && e.side===o){ if(e.res==='7M') get(e.opp).r7++; if(e.res==='2MIN') get(e.opp).r2++; }
-    if(e.kind==='p7' && e.side===s){ const r = get(e.p); r.m7.n++; if(e.res==='GOAL') r.m7.g++; if(e.reb){ r.sh.n++; if(e.reb==='GOAL') r.sh.g++; } }
+    if(e.kind==='p7' && e.side===s && e.res==='MB7M') get(e.p).mb++;
+    else if(e.kind==='p7' && e.side===s){ const r = get(e.p); r.m7.n++; if(e.res==='GOAL') r.m7.g++; if(e.reb){ r.sh.n++; if(e.reb==='GOAL') r.sh.g++; } }
     if(e.kind==='pen2' && e.side===s) get(e.p).r2++;
     if(e.kind==='pen2' && e.side===o) get(e.opp).p2++;
   });
@@ -890,8 +953,8 @@ function computePlayers(m, half, s){
 }
 function playersHTML(m){
   const ratio = v => v.n ? `${v.g} / ${v.n}` : '', pc = v => v.n ? Math.round(100*v.g/v.n)+'%' : '', z = n => n || '';
-  const pmCell = r => !r.any ? '<td></td>' : `<td class="pm ${r.pm>0?'up':r.pm<0?'down':'zero'}">${r.pm>0?'+':''}${r.pm}</td>`;
-  const cells = r => `<td>${ratio(r.sh)}</td><td class="pc">${pc(r.sh)}</td><td>${ratio(r.m7)}</td><td class="pc">${pc(r.m7)}</td><td>${z(r.p2)}</td><td>${z(r.p7)}</td><td class="mb">${z(r.mb)}</td><td>${z(r.r2)}</td><td>${z(r.r7)}</td>${pmCell(r)}`;
+  const pmCell = r => !r.any ? '<td class="bl"></td>' : `<td class="bl pm ${r.pm>0?'up':r.pm<0?'down':'zero'}">${r.pm>0?'+':''}${r.pm}</td>`;
+  const cells = r => `<td class="bl">${ratio(r.sh)}</td><td class="pc">${pc(r.sh)}</td><td class="bl">${ratio(r.m7)}</td><td class="pc">${pc(r.m7)}</td><td class="bl">${z(r.p2)}</td><td>${z(r.p7)}</td><td class="mb bl">${z(r.mb)}</td><td class="bl">${z(r.r2)}</td><td>${z(r.r7)}</td>${pmCell(r)}`;
   const empty = {sh:{g:0,n:0}, m7:{g:0,n:0}, p2:0, p7:0, mb:0, r2:0, r7:0, pm:0, any:false};
   const table = s => {
     const T = sideTeam(m,s), rows = computePlayers(m, UI.aHalf, s);
@@ -901,11 +964,11 @@ function playersHTML(m){
     if(rows['?']) body += `<tr><td class="pl"><span class="num">?</span> Unknown</td>${cells(rows['?'])}</tr>`;
     const tot = Object.values(rows).reduce((a,r)=>({sh:{g:a.sh.g+r.sh.g,n:a.sh.n+r.sh.n}, m7:{g:a.m7.g+r.m7.g,n:a.m7.n+r.m7.n}, p2:a.p2+r.p2, p7:a.p7+r.p7, mb:a.mb+r.mb, r2:a.r2+r.r2, r7:a.r7+r.r7, pm:a.pm+r.pm, any:a.any||r.any}), {...empty, sh:{g:0,n:0}, m7:{g:0,n:0}});
     return `<section class="ptab" style="--tc:${esc(T.color)}"><div class="ptab-h">${esc(T.name)}</div><div class="tw"><table class="pt pp">
-      <thead><tr><th rowspan="2" class="pl">Player</th><th colspan="2">Shots (no 7m)</th><th colspan="2">7m</th><th colspan="2">Provoked</th><th rowspan="2">MB</th><th colspan="2">Received</th><th rowspan="2">+/−</th></tr>
-      <tr><th>Ratio</th><th>%</th><th>Ratio</th><th>%</th><th>2'</th><th>7m</th><th>2'</th><th>7m</th></tr></thead>
+      <thead><tr><th rowspan="2" class="pl">Player</th><th colspan="2" class="bl">Shots (no 7m)</th><th colspan="2" class="bl">7m</th><th colspan="2" class="bl">Provoked</th><th rowspan="2" class="bl">MB</th><th colspan="2" class="bl">Received</th><th rowspan="2" class="bl">+/−</th></tr>
+      <tr><th class="bl">Ratio</th><th>%</th><th class="bl">Ratio</th><th>%</th><th class="bl">2'</th><th>7m</th><th class="bl">2'</th><th>7m</th></tr></thead>
       <tbody>${body}</tbody><tfoot><tr><td class="pl">TOTAL</td>${cells(tot)}</tr></tfoot></table></div></section>`; };
   return `<div class="ptabs">${table('L')}${table('R')}</div>
-    <p class="foot-note">+/− = positive actions − negative actions. Positive: goal (7m included), 7m provoked, 2' provoked. Negative: missed shot or 7m (save, post, out, block), turnover (MB), 2' received, 7m committed. Shots include C/C.</p>`;
+    <p class="foot-note">+/− = positive actions − negative actions. Positive: goal (7m included), 7m provoked, 2' provoked. Negative: missed shot or 7m (save, post, out, block), turnover (MB, MB7m included), 2' received, 7m committed. Shots include C/C.</p>`;
 }
 /* ===================== setup (page 1) ===================== */
 function setupHTML(){
@@ -913,11 +976,11 @@ function setupHTML(){
   const mrow = m => { const sc = score(m);
     return `<div class="li"><div class="main"><div class="t1">${esc(fullCode(m))} <span class="num" style="color:var(--muted)">${sc.L}–${sc.R}</span></div><div class="t2">${esc(team(m.homeId)?.name||'?')} vs ${esc(team(m.awayId)?.name||'?')} · ${m.events.length} actions</div></div>
       ${m.status==='live' ? `<button class="mini" data-act="open-match" data-v="${m.id}">Open bench</button><button class="mini" data-act="finish-ask" data-v="${m.id}">Finish</button>` : `<button class="mini" data-act="open-match" data-v="${m.id}">View</button>`}
-      ${m.status==='live' ? `<button class="mini" data-act="squad" data-v="${m.id}">Squad</button>` : ''}<button class="mini" data-act="export-match" data-v="${m.id}">Export JSON</button><button class="mini danger" data-act="del-match-ask" data-v="${m.id}">Delete</button></div>`; };
+      ${m.status==='live' ? `<button class="mini" data-act="squad" data-v="${m.id}">Squad</button>` : ''}<button class="mini" data-act="export-match" data-v="${m.id}">Backup</button><button class="mini" data-act="print" data-v="${m.id}">Print / PDF</button><button class="mini danger" data-act="del-match-ask" data-v="${m.id}">Delete</button></div>`; };
   const trow = t => `<div class="li"><span class="dot" style="background:${esc(t.color)}"></span><div class="main"><div class="t1">${esc(t.name)} <span style="color:var(--muted);font-weight:500">${esc(t.abbr)}</span>${t.own?' <span class="badge">Our club</span>':''}</div><div class="t2">${t.players.filter(p=>p.active!==false).length} players · ${t.players.filter(p=>p.gk&&p.active!==false).length} GK</div></div><button class="mini" data-act="edit-team" data-v="${t.id}">Edit</button></div>`;
   const th = DB.settings.theme || 'light';
   const tb = (v,l) => `<button data-act="theme" data-v="${v}" aria-pressed="${th===v}">${l}</button>`;
-  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?"0.6":"0.6 preview"}</span>
+  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?"0.7":"0.7 preview"}</span>
       ${match()&&match().status==='live'?`<button class="tb primary" data-act="open-match" data-v="${UI.matchId}" style="margin-left:auto">Back to bench →</button>`:''}</header>
     <div class="setup"><div class="setup-in">
       <div style="display:flex;flex-direction:column;gap:18px">
@@ -927,13 +990,13 @@ function setupHTML(){
           ${done.length ? done.map(mrow).join('') : '<p class="hint">Finished matches appear here, read only.</p>'}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:18px">
-        <div class="card"><div class="card-h"><h3>Teams</h3><button class="tb" data-act="edit-team">+ New team</button></div>
-          ${DB.teams.length ? DB.teams.map(trow).join('') : '<p class="hint">Add your club and the opponents.</p>'}</div>
         <div class="card"><div class="card-h"><h3>Display</h3><div class="seg" role="group" aria-label="Theme">${tb('light','Light')}${tb('dark','Dark')}${tb('auto','Auto')}</div></div>
           <p class="hint">Auto follows the tablet's light or dark setting.</p></div>
         <div class="card"><div class="card-h"><h3>Backup</h3></div>
-          <p class="hint">Export a JSON file after each match and send it to your PC. If the tablet loses its data, import the file to restore it.</p>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-act="export-all">Export everything</button><button class="mini" data-act="import">Import JSON</button></div></div>
+          <p class="hint">Make a backup after each match and send it to your PC. If the tablet loses its data, restore it from that file.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-act="export-all">Backup all</button><button class="mini" data-act="import">Restore backup</button></div></div>
+        <div class="card"><div class="card-h"><h3>Teams</h3><button class="tb" data-act="edit-team">+ New team</button></div>
+          ${DB.teams.length ? DB.teams.map(trow).join('') : '<p class="hint">Add your club and the opponents.</p>'}</div>
       </div>
     </div></div>`;
 }
@@ -943,9 +1006,12 @@ function openModal(type,data={}){ UI.modal = {type,...data}; renderModal(); }
 function closeModal(){ UI.modal = null; renderModal(); }
 function renderModal(){
   const host = document.getElementById('modal-host'), M = UI.modal;
-  if(!M){ host.innerHTML=''; return; }
+  if(!M){ host.innerHTML=''; UI.lastModalType = null; return; }
   const map = {team:teamModal, newmatch:newMatchModal, log:logModal, edit:editModal, export:exportModal, import:importModal, confirm:confirmModal, info:infoModal, score:scoreModal, zoom:zoomModal, squad:squadModal};
+  const prevBody = host.querySelector('.m-body'), keep = prevBody && UI.lastModalType===M.type ? prevBody.scrollTop : 0;
   host.innerHTML = `<div class="scrim" data-act="scrim">${map[M.type](M)}</div>`;
+  UI.lastModalType = M.type;
+  const body = host.querySelector('.m-body'); if(body && keep) body.scrollTop = keep;
   scrollChronos();
 }
 const mShell = (title,body,foot,wide) => `<div class="modal ${wide?'wide':''}" role="dialog" aria-label="${esc(title)}"><div class="m-head"><h2>${esc(title)}</h2><button class="mini" data-act="close-modal">✕</button></div><div class="m-body">${body}</div>${foot?`<div class="m-foot">${foot}</div>`:''}</div>`;
@@ -993,15 +1059,15 @@ function logModal(){
   const m = match(), lock = ro(m);
   const list = m.events.map((e,i)=>({e,i})).reverse().map(({e,i})=>`<div class="logi"><span class="ix">${i+1}</span><span class="sd" style="color:${esc(sideTeam(m,e.side).color)}">${esc(sideTeam(m,e.side).abbr)}</span>
     <div class="tx">${esc(describe(m,e))}<div class="h">${e.half===1?'1st':'2nd'} half</div></div>
-    ${lock?'':`<button class="mini" data-act="edit-ev" data-v="${e.id}">Edit</button>${UI.modal.del===e.id?`<button class="mini danger" data-act="del-ev" data-v="${e.id}">Confirm delete</button>`:`<button class="mini" data-act="del-ask" data-v="${e.id}">Delete</button>`}`}</div>`).join('');
-  return mShell(`Actions · ${m.events.length}`, list ? `<div class="logl">${list}</div>` : '<p class="hint">No actions yet.</p>', '', true);
+    ${lock?'':`<button class="mini mv" data-act="mv" data-d="-1" data-v="${e.id}" ${i===0?'disabled':''} aria-label="Move earlier" title="Earlier">▼</button><button class="mini mv" data-act="mv" data-d="1" data-v="${e.id}" ${i===m.events.length-1?'disabled':''} aria-label="Move later" title="Later">▲</button><button class="mini" data-act="edit-ev" data-v="${e.id}">Edit</button>${UI.modal.del===e.id?`<button class="mini danger" data-act="del-ev" data-v="${e.id}">Confirm delete</button>`:`<button class="mini" data-act="del-ask" data-v="${e.id}">Delete</button>`}`}</div>`).join('');
+  return mShell(`Actions · ${m.events.length}`, (list ? '<p class="hint">Newest first. ▼ moves an action earlier in the match, ▲ later (for example a time-out you registered late).</p>' : '') + (list ? `<div class="logl">${list}</div>` : '<p class="hint">No actions yet.</p>'), '', true);
 }
 function editFields(d){
   // which fields an event of this kind/result carries
   if(d.kind==='poss'){
     const f = ['phase','res'];
     if(SHOT.includes(d.res)||TURN.includes(d.res)||d.res==='7M'||d.res==='2MIN') f.push('p');
-    if(SHOT.includes(d.res)) f.push('zone','gk');
+    if(SHOT.includes(d.res)) f.push('zone','gk','passive');
     if(['7M','2MIN',...FOULS].includes(d.res)) f.push('opp');
     if(d.res==='7M' && !isTrans(d.phase)) f.push('zone');
     if(d.res==='SFOUL') f.push('gk');
@@ -1009,7 +1075,7 @@ function editFields(d){
     return f;
   }
   if(d.kind==='p7') return ['res','p','gk', ...(d.res==='SAVE'||d.res==='POST' ? ['reb'] : [])];
-  return { pen2:['p','opp','min','sec'], yc:['p','min','sec'], rc:['p','min','sec'], foul:['p'], out3:['p'], to:['min','sec']}[d.kind] || [];
+  return { pen2:['p','opp','min','sec'], yc:['p','min','sec'], rc:['p','min','sec'], foul:['p'], out3:['p'], pl:['p'], to:['min','sec']}[d.kind] || [];
 }
 function editModal(M){
   const m = match(), d = M.draft, s = d.side, o = other(s);
@@ -1022,12 +1088,13 @@ function editModal(M){
   const oLabel = d.res==='7M' ? 'Committed by' : (d.res==='2MIN' ? 'Sanctioned' : d.kind==='pen2' ? 'Provoked by' : 'Foul by');
   F.forEach(k=>{
     if(k==='phase') out.push(sel('phase','Phase',d.phase,ALL_PH.map(p=>[p,PH_LABEL[p]])));
-    if(k==='res'){ const rs = d.kind==='p7' ? ['GOAL','SAVE','POST','OUT'] : [...SHOT,'7M','2MIN',...FOULS,...(isTrans(d.phase)?['STOPFB']:[]),...TURN];
+    if(k==='res'){ const rs = d.kind==='p7' ? ['GOAL','SAVE','POST','OUT','MB7M'] : [...SHOT,'7M','2MIN',...FOULS,...(isTrans(d.phase)?['STOPFB']:[]),...TURN];
       out.push(sel('res','Result',d.res,rs.map(r=>[r,RES_LABEL[r]||r]))); }
     if(k==='p') out.push(sel('p',pLabel,d.p,pl(s)));
     if(k==='opp') out.push(sel('opp',oLabel,d.opp,pl(o)));
     if(k==='zone'){ const zs = isTrans(d.phase) ? ['L','C','R','CCL','CCC','CCR'] : POS_ZONES.map(z=>z[1]); out.push(sel('zone','Zone',d.zone,zs.map(z=>[z,ZONE_LABEL[z]]))); }
     if(k==='gk') out.push(sel('gk','Goalkeeper',d.gk,gks(o)));
+    if(k==='passive') out.push(sel('passive','Passive play',d.passive?'1':'',[['','No'],['1','Yes']]));
     if(k==='reb') out.push(sel('reb','Rebound by the shooter',d.reb||'',[['','No rebound'],...SHOT.map(r=>[r,RES_LABEL[r]])]));
     if(k==='min') out.push(sel('min','Minute',d.min,nums(61)));
     if(k==='sec') out.push(sel('sec','Second',d.sec,nums(60)));
@@ -1040,6 +1107,7 @@ function cleanEvent(d){
   Object.keys(d).forEach(k=>{ if(!keep.has(k)) delete d[k]; });
   if(d.kind==='poss' && SHOT.includes(d.res) && isCC(d.zone)) delete d.gk;
   if(d.kind==='poss' && keep.has('zone')){ const ok = isTrans(d.phase) ? ['L','C','R','CCL','CCC','CCR'] : POS_ZONES.map(z=>z[1]); if(!ok.includes(d.zone)) d.zone = ok[0]; }
+  if(!d.passive) delete d.passive;
   ['p','opp'].forEach(k=>{ if(keep.has(k) && d[k]===undefined) d[k]='?'; });
   ['min','sec'].forEach(k=>{ if(keep.has(k) && d[k]===undefined) d[k]=0; });
   return d;
@@ -1055,17 +1123,17 @@ const canShareFiles = () => { try{ return !!(window.BENCH_PWA && navigator.canSh
 function exportModal(M){
   const share = canShareFiles();
   const hint = window.BENCH_PWA
-    ? `File <b>${esc(M.name)}</b> has been saved to the tablet's Downloads folder.${share?' Tap <b>Send</b> to send it by email, WhatsApp, Drive… (it travels as a .txt file; Import accepts it as it is)':''}`
+    ? `File <b>${esc(M.name)}</b> has been saved to the tablet's Downloads folder.${share?' Tap <b>Send</b> to send it by email, WhatsApp, Drive… (it travels as a .txt file; Restore backup accepts it as it is)':''}`
     : `File: <b>${esc(M.name)}</b>. In this preview downloads can be blocked, so copy the text below and save it as a .json file, or send it to yourself.`;
-  return mShell('Export backup', `<p class="hint">${hint}</p>
+  return mShell('Backup', `<p class="hint">${hint}</p>
     <textarea id="x-text" readonly style="min-height:${window.BENCH_PWA?120:220}px">${esc(M.text)}</textarea>`,
-    `<button class="tb" data-act="close-modal">Close</button><button class="tb" data-act="copy-export">Copy JSON</button>${share?'<button class="tb primary" data-act="share-export">Send…</button>':''}`);
+    `<button class="tb" data-act="close-modal">Close</button><button class="tb" data-act="copy-export">Copy text</button>${share?'<button class="tb primary" data-act="share-export">Send…</button>':''}`);
 }
 function importModal(){
-  return mShell('Import backup', `<p class="hint">Choose a .json backup or paste its contents. Teams and matches with the same id are replaced; everything else is kept.</p>
+  return mShell('Restore backup', `<p class="hint">Choose a backup file (.json or .txt) or paste its contents. Teams and matches with the same id are replaced; everything else is kept.</p>
     <input type="file" id="i-file" accept=".json,.txt,application/json,text/plain">
     <textarea id="i-text" placeholder="Paste JSON here"></textarea><div class="err" id="i-err"></div>`,
-    `<button class="tb" data-act="close-modal">Cancel</button><button class="tb primary" data-act="do-import">Import</button>`);
+    `<button class="tb" data-act="close-modal">Cancel</button><button class="tb primary" data-act="do-import">Restore</button>`);
 }
 function confirmModal(M){
   return mShell(M.title, `<p style="margin:0;line-height:1.5">${esc(M.text)}</p>`, `<button class="tb" data-act="close-modal">Cancel</button><button class="tb primary" ${M.danger?'style="background:var(--red);border-color:var(--red)"':''} data-act="${M.ok}" data-v="${esc(M.v||'')}">${esc(M.okLabel)}</button>`);
@@ -1074,9 +1142,10 @@ function zoomModal(M){
   const m = match(), s = M.side, T = sideTeam(m,s);
   const title = {court:'Positional shots', fb:'Fastbreak & after-goal shots', chrono:'Possessions'}[M.what];
   const body = M.what==='court' ? courtHTML(m,s) : M.what==='fb' ? fbMapHTML(m,s) : chronoHTML(m,s);
-  const legend = M.what==='chrono' ? '<p class="hint">Red: goal, 7m or 2\' provoked · Blue: missed shot or turnover · Black: fastbreak stopped (Stop FB, foul). The thick vertical line marks the start of the 2nd half.</p>'
-    : '<p class="hint">Red: goal · Blue: no goal' + (M.what==='court' ? ' · Black: 7m provoked' : '') + '</p>';
-  return mShell(`${T.name} · ${title}`, `<div class="zoom">${body}</div>${legend}`, '', 'x').replace('class="modal wide"', 'class="modal xwide"');
+  const legend = M.what==='chrono' ? '<p class="hint">Red: goal, 7m or 2\' provoked · Blue: missed shot or turnover · Black: fastbreak stopped (Stop FB, foul) · Coloured bar: time-out of that team · Dashed line ⇄: playmaker change · Underlined: shot in passive play.</p>'
+    : '<p class="hint">Red: goal · Blue: no goal' + (M.what==='court' ? ' · Black: 7m provoked · Underlined: passive play' : '') + '</p>';
+  const hl = vh(m)===1 ? '1st half' : '2nd half';
+  return mShell(`${T.name} · ${title} · ${hl}`, `<div class="zoom">${body}</div>${legend}`, '', 'x').replace('class="modal wide"', 'class="modal xwide"');
 }
 function squadModal(M){
   const m = DB.matches.find(x=>x.id===M.id);
@@ -1086,6 +1155,25 @@ function squadModal(M){
       <div class="sq-grid">${all.map(p=>`<button class="sq ${out.has(p.id)?'off':''}" data-act="sq-toggle" data-side="${s}" data-v="${p.id}" aria-pressed="${!out.has(p.id)}"><span class="num">${p.num}</span><span class="nm">${esc(p.name)}${p.gk?' · GK':''}</span>${out.has(p.id)?'<span class="tag">Not playing</span>':''}</button>`).join('')}</div></div>`; };
   return mShell(`Squad · ${fullCode(m)}`, `<p class="hint">Tap the players who are not playing today. They disappear from the bench buttons and from the goalkeeper rows. Tap again to bring them back.</p><div class="sq-wrap">${col('L')}${col('R')}</div>`,
     `<button class="tb primary" data-act="close-modal">Done</button>`, true);
+}
+function printMatch(m){
+  if(!m) return;
+  const keepHalf = UI.aHalf, keepView = UI.viewHalf; UI.aHalf = 'T'; UI.viewHalf = null;
+  const L = sideTeam(m,'L'), R = sideTeam(m,'R'), sc = score(m);
+  const head = sub => `<header class="pp-h"><b>${esc(fullCode(m))}</b><span>${esc(L.name)} <span class="num">${sc.L} – ${sc.R}</span> ${esc(R.name)}</span><span class="pp-sub">${sub}</span></header>`;
+  const bench = h => { const hs = computeStats(m, String(h));
+    const side = s => { const T = sideTeam(m,s);
+      return `<div class="pp-side" style="--tc:${esc(T.color)}"><div class="pp-tn">${esc(T.name)}</div>${gkHTML(m,s,h)}<div class="maps">${courtHTML(m,s,h)}${fbMapHTML(m,s,h)}</div></div>`; };
+    const chr = s => `<div class="pp-chr" style="--tc:${esc(sideTeam(m,s).color)}"><div class="pp-tn">${esc(sideTeam(m,s).abbr)} · possessions</div>${chronoHTML(m,s,h)}</div>`;
+    return `<section class="pp">${head(`${h===1?'1st':'2nd'} half · ${hs.L.goals} – ${hs.R.goals}`)}<div class="pp-cols">${side('L')}${side('R')}</div>${chr('L')}${chr('R')}</section>`; };
+  const html = bench(1) + bench(2)
+    + `<section class="pp pp-team">${head('Analysis · Team · full match')}<div class="an-in">${teamHTML(m)}</div></section>`
+    + `<section class="pp">${head('Analysis · Players · full match')}<div class="an-in">${playersHTML(m)}</div></section>`;
+  UI.aHalf = keepHalf; UI.viewHalf = keepView;
+  const host = document.getElementById('print-host'); host.innerHTML = html;
+  const done = () => { host.innerHTML = ''; window.removeEventListener('afterprint', done); };
+  window.addEventListener('afterprint', done);
+  setTimeout(()=>{ try{ window.print(); }catch(e){ done(); toast('Printing is not available on this device.'); } }, 80);
 }
 function infoModal(M){ return mShell(M.title, `<p style="margin:0;line-height:1.5">${esc(M.text)}</p>`, `<button class="tb primary" data-act="close-modal">OK</button>`); }
 
@@ -1137,6 +1225,8 @@ function usedPlayerIds(){
 document.addEventListener('click', ev=>{
   const b = ev.target.closest('[data-act]'); if(!b) return;
   const act = b.dataset.act, v = b.dataset.v, side = b.dataset.side, m = match();
+  // any registering tap while looking back at the 1st half brings the bench back to the 2nd half
+  if(UI.viewHalf && ['phase','yc','rc','out3','pen2','p7','to','to-del','gk','undo','pl','passive'].includes(act)) UI.viewHalf = null;
   if(act==='scrim'){ if(ev.target===b) closeModal(); return; }
   switch(act){
     case 'phase': startFlow(side,'poss',{phase:v}); break;
@@ -1146,21 +1236,28 @@ document.addEventListener('click', ev=>{
     case 'flow-cancel': UI.flow=null; render(); break;
     case 'sanc': UI.sanc = UI.sanc===side ? null : side; render(); break;
     case 'gk': m.activeGk[side] = v; save(); render(); toast(`${sideTeam(m,side).abbr} goalkeeper in goal: ${pName(m,side,v)}`); break;
-    case 'half': { if(Number(v)===m.half) break;
-      const n2 = m.events.filter(e=>e.half===2).length;
-      if(Number(v)===2) openModal('confirm',{title:'Start the 2nd half?',text:'New actions will be registered in the 2nd half.',ok:'half-go',okLabel:'Start 2nd half',v});
-      else openModal('confirm',{title:'Go back to the 1st half?',text:`New actions will be registered in the 1st half again.${n2?` The ${n2} actions already registered in the 2nd half stay there; you can move any of them in Actions → Edit.`:''}`,ok:'half-go',okLabel:'Back to 1st half',v});
+    case 'half': { const n = Number(v);
+      if(m.half===2){ UI.viewHalf = n===1 ? 1 : null; UI.flow = null; render(); break; }   // looking back at the 1st half, no confirmation
+      if(n===2 && !ro(m)) openModal('confirm',{title:'Start the 2nd half?',text:'New actions will be registered in the 2nd half. Maps, timelines and goalkeeper rows start empty; tap 1st half at any time to look back.',ok:'half-go',okLabel:'Start 2nd half',v});
       break; }
-    case 'half-go': m.half = Number(v); UI.flow=null; save(); closeModal(); render(); toast(m.half===1?'Back to the 1st half':'2nd half started'); break;
+    case 'half-go': m.half = Number(v); UI.viewHalf = null; UI.flow=null; save(); closeModal(); render(); toast('2nd half started'); break;
     case 'undo': { if(!m || ro(m) || !m.events.length) break; const e = m.events.pop(); save(); render(); toast(`Undone: ${sideTeam(m,e.side).abbr} · ${describe(m,e)}`); break; }
     case 'log': openModal('log'); break;
     case 'analysis': UI.analysis = true; UI.flow=null; UI.sanc=null; render(); break;
     case 'analysis-close': UI.analysis = false; render(); break;
     case 'ahalf': UI.aHalf = v; render(); break;
     case 'atab': UI.aTab = v; render(); break;
-    case 'go-setup': UI.view='setup'; UI.flow=null; UI.analysis=false; UI.sanc=null; render(); break;
-    case 'open-match': UI.matchId = v; UI.view='match'; UI.analysis=false; UI.flow=null; UI.sanc=null; render(); break;
+    case 'go-setup': UI.viewHalf=null; UI.view='setup'; UI.flow=null; UI.analysis=false; UI.sanc=null; render(); break;
+    case 'open-match': UI.viewHalf=null; UI.matchId = v; UI.view='match'; UI.analysis=false; UI.flow=null; UI.sanc=null; render(); break;
     case 'close-modal': closeModal(); break;
+    case 'to-del': { const e = m.events.filter(x=>x.kind==='to' && x.side===side)[Number(v)]; if(!e) break;
+      openModal('confirm',{title:'Delete this time-out?',text:`${sideTeam(m,side).name} · time-out ${Number(v)+1}${e.min!=null?' · '+tmStr(e):''}`,ok:'to-del-go',okLabel:'Delete time-out',v:e.id,danger:true}); break; }
+    case 'to-del-go': m.events = m.events.filter(e=>e.id!==v); save(); closeModal(); render(); toast('Time-out deleted'); break;
+    case 'mv': { const i = m.events.findIndex(e=>e.id===v), j = i + Number(b.dataset.d);
+      if(i<0 || j<0 || j>=m.events.length) break; [m.events[i], m.events[j]] = [m.events[j], m.events[i]]; save(); render(); break; }
+    case 'pl': startFlow(side,'pl'); break;
+    case 'passive': m.passive = m.passive || {L:false,R:false}; m.passive[side] = !m.passive[side]; save(); render(); toast(`${sideTeam(m,side).abbr} · passive play ${m.passive[side]?'ON':'OFF'}`); break;
+    case 'print': printMatch(DB.matches.find(x=>x.id===v)); break;
     case 'squad': openModal('squad',{id: v || UI.matchId}); break;
     case 'sq-toggle': { const mt = DB.matches.find(x=>x.id===UI.modal.id); mt.out = mt.out || {L:[],R:[]};
       const list = mt.out[side] = mt.out[side] || [], i = list.indexOf(v); if(i>=0) list.splice(i,1); else list.push(v);
@@ -1246,6 +1343,7 @@ document.addEventListener('change', ev=>{
     const k = el.dataset.edit, d = UI.modal.draft; let v = el.value;
     if(['half','min','sec'].includes(k)) v = Number(v);
     if(k==='gk') v = v==='' ? null : v;
+    if(k==='passive'){ if(v==='1') d.passive = true; else delete d.passive; return; }
     if(k==='reb' && v===''){ delete d.reb; if(k==='res'||k==='phase') renderModal(); return; }
     d[k] = v;
     if(k==='phase'||k==='res') renderModal();
@@ -1282,7 +1380,7 @@ function seed(){
       if(isTrans(phase)) res = q<.6?'GOAL':q<.72?'SAVE':q<.78?'OUT':q<.86?pick(TURN):q<.93?'FOUL':'STOPFB';
       else res = q<.42?'GOAL':q<.57?'SAVE':q<.61?'POST':q<.64?'OUT':q<.68?'BLOCK':q<.82?pick(TURN):q<.88?'7M':q<.92?'2MIN':q<.97?'FOUL':'SFOUL';
       const e = {kind:'poss', side, half, phase, res};
-      if(SHOT.includes(res)){ e.p = pick(field(side)); e.zone = isTrans(phase) ? (rnd()<.1?pick(['CCL','CCC','CCR']):pick(['L','C','R'])) : pick(POS_ZONES)[1]; if(!isCC(e.zone)) e.gk = m.activeGk[o]; }
+      if(SHOT.includes(res)){ e.p = pick(field(side)); if(!isTrans(phase) && rnd()<.12) e.passive = true; e.zone = isTrans(phase) ? (rnd()<.1?pick(['CCL','CCC','CCR']):pick(['L','C','R'])) : pick(POS_ZONES)[1]; if(!isCC(e.zone)) e.gk = m.activeGk[o]; }
       else if(TURN.includes(res)) e.p = pick(field(side));
       else if(res==='7M'||res==='2MIN'){ e.p = pick(field(side)); e.opp = pick(field(o)); if(res==='7M' && !isTrans(phase)) e.zone = pick(POS_ZONES)[1]; if(res==='2MIN'){ e.min = half===1?8+i%20:32+i%25; e.sec = Math.floor(rnd()*60); } }
       else if(FOULS.includes(res)){ e.opp = pick(field(o)); if(res==='SFOUL') e.gk = m.activeGk[o]; }
@@ -1292,6 +1390,8 @@ function seed(){
       if(half===1 && i===11) push({kind:'yc', side:'L', half, p:'w22', min:14, sec:5});
       if(half===1 && i===14) push({kind:'to', side:'R', half, min:17, sec:42});
       if(half===2 && i===9){ m.activeGk.L = 'w16'; }
+      if(half===2 && i===5) push({kind:'pl', side:'L', half, p:'w34'});
+      if(half===2 && i===11) push({kind:'to', side:'L', half, min:44, sec:10});
       if(half===2 && [2,7,12].includes(i)) push({kind:'pen2', side:'R', half, p:'r8', opp:pick(field('L')), min:33+i*2, sec:15});
       if(half===2 && i===n-3) push({kind:'out3', side:'L', half, p:'w9'});
       const cont = (['SAVE','POST','BLOCK'].includes(res) && rnd()<.25) || FOULS.includes(res) || res==='STOPFB' || res==='2MIN';

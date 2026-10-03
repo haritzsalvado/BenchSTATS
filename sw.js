@@ -1,5 +1,5 @@
-// Bench Live Stats service worker · v0.6.0
-const CACHE = 'bench-app-0.6.0';
+// Bench Live Stats service worker · v0.7.0
+const CACHE = 'bench-app-0.7.0';
 const FONTS = 'bench-fonts';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())); });
