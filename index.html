@@ -16,7 +16,7 @@ html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bott
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0} img{max-width:100%} [hidden]{display:none!important}
 </style>
-<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.9.0';</script>
+<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.10.0';</script>
 <title>Bench Live Stats</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -331,7 +331,7 @@ textarea{font-family:var(--f-num);font-size:13px;min-height:160px;resize:vertica
 .tile{border:1px solid var(--line);border-radius:7px;padding:8px 4px;text-align:center;display:flex;flex-direction:column;gap:3px;justify-content:center}
 .tile .tl{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted)}
 .tile .tv{font-family:var(--f-num);font-weight:700;font-size:15px}
-.tile .tp{font-family:var(--f-num);font-size:11px;color:var(--fb)}
+.tile .tp{font-family:var(--f-num);font-size:13.5px;font-weight:700;color:var(--fb)}
 .tile .tv.red{color:var(--red)}
 .tw{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:10px}
 table.pt{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
@@ -340,6 +340,9 @@ table.pt thead th{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-tra
 table.pt thead tr:first-child th{color:var(--fg);background:var(--card2)}
 table.pt td{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 table.pt td.ph,table.pt th.ph{background:var(--card2);font-family:var(--f-disp);font-weight:700;font-size:14px;letter-spacing:.03em;color:var(--fg)}
+table.pt:not(.ptbl){font-size:15px}
+table.pt:not(.ptbl) thead th{font-size:12px}
+table.pt:not(.ptbl) td.ph,table.pt:not(.ptbl) th.ph{font-size:16px}
 table.pt td.pc{color:var(--brand);font-weight:700}
 table.pt td.mb{color:var(--red)}
 table.pt tr.sub td{border-top:2px solid var(--line)}
@@ -357,7 +360,8 @@ table.ptbl tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--card2)
 table.ptbl td.pm{font-weight:700;font-size:13.5px}
 table.ptbl .bl{border-left:2px solid var(--line)}
 table.ptbl td.rb{color:var(--fb)}
-table.ptbl td.pm.up{color:var(--red)} table.ptbl td.pm.down{color:var(--blue)} table.ptbl td.pm.zero{color:var(--fg)}
+table.ptbl td.pm.up{color:var(--fb)} table.ptbl td.pm.down{color:var(--red)} table.ptbl td.pm.zero{color:var(--blue)}
+table.ptbl tr.gksep td{border-top:2px solid var(--fg)}
 .foot-note{font-size:12px;color:var(--muted);line-height:1.5;max-width:80ch;margin:0}
 
 @media (max-width: 1000px){
@@ -408,7 +412,7 @@ table.ptbl td.pm.up{color:var(--red)} table.ptbl td.pm.down{color:var(--blue)} t
   .pp .mk{width:7px;height:11px}
   .pp .zabs{min-height:150px}
   .pp .ch-scroll{overflow:visible}
-  .pp .ch-grid > div{min-width:19px;font-size:10px}
+  .pp .ch-grid > div{min-width:19px;font-size:10px;padding:0 1px}
   .pp .ch-grid > div.tom{min-width:4px;width:4px}
   .pp .ch-grid > div.plm{min-width:0}
   .pp .an-cards{gap:8px} .pp .tc{padding:8px;gap:8px}
@@ -417,6 +421,10 @@ table.ptbl td.pm.up{color:var(--red)} table.ptbl td.pm.down{color:var(--blue)} t
   .pp .foot-note{font-size:9.5px}
   .pp-team .foot-note{display:none}
   .pp-team table.pt th,.pp-team table.pt td{padding:3px 5px}
+  .pp-team table.pt{font-size:13px} .pp-team table.pt td.ph{font-size:14px} .pp-team table.pt thead th{font-size:11px}
+  .pp .chip{font-size:13.5px}
+  .pp .ch-grid > div{font-size:12.5px;min-width:21px}
+  .pp .ch-grid sub{font-size:8.5px}
   .pp-team .tiles .tile{padding:5px 3px}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
@@ -459,6 +467,8 @@ const ZONE_XY = {LW:[7,9], RW:[93,9], PNL:[25,13], PNC:[50,17], PNR:[75,13], PVL
   '69L':[19,40], '69C':[50,50], '69R':[81,40], '9L':[17,66], '9C':[50,72], '9R':[83,66]};
 Object.assign(ZONE_LABEL,{L:'Left',C:'Centre',R:'Right',CCL:'C/C L',CCC:'C/C C',CCR:'C/C R'});
 const isCC = z => !!z && z.startsWith('CC');
+// goals that can carry an assist: positional from pivot or wing; 2nd/3rd wave fastbreak or after-goal from L/C/R (not C/C)
+const canAssist = (phase, zone) => (!isTrans(phase) && ['PVL','PVC','PVR','LW','RW'].includes(zone)) || (['FB2w','FB3w','AG2w','AG3w'].includes(phase) && ['L','C','R'].includes(zone));
 const statsPhase = e => isCC(e.zone) ? 'FB1w' : e.phase;   // C/C counts as FB1w in stats
 const KIND_LABEL = {poss:'Possession',p7:'7m shot',pen2:"2'",foul:'Foul',yc:'Yellow card',rc:'Red card',out3:'Player out (3 attacks)',to:'Time-out',pl:'Playmaker change'};
 const MONTHS = ['01','02','03','04','05','06','07','08','09','10','11','12'];
@@ -520,7 +530,7 @@ function describe(m,e){
   switch(e.kind){
     case 'poss': {
       let s = `${PH_LABEL[e.phase]} · ${RES_LABEL[e.res]||e.res}`;
-      if(SHOT.includes(e.res)) s += ` · ${pn(e.p)} · ${ZONE_LABEL[e.zone]||'–'}`;
+      if(SHOT.includes(e.res)) s += ` · ${pn(e.p)} · ${ZONE_LABEL[e.zone]||'–'}` + (e.ast && e.ast!=='none' ? ` · assist ${pn(e.ast)}` : '') + (e.blk ? ` · blocked by ${on(e.blk)}` : '');
       else if(TURN.includes(e.res)) s += ` · ${pn(e.p)}` + (e.rec ? (e.rec==='none' ? ' · no one' : ` · won by ${on(e.rec)}`) : '');
       else if(e.res==='7M') s += ` · prov. ${pn(e.p)} · comm. ${on(e.opp)}`+(e.zone?` · ${ZONE_LABEL[e.zone]}`:'');
       else if(e.res==='2MIN') s += ` · prov. ${pn(e.p)} · sanct. ${on(e.opp)}`+t();
@@ -565,7 +575,7 @@ function computeStats(m, half){
     const p7 = ev.filter(e=>e.kind==='p7' && e.side===s && e.res!=='MB7M');
     const rebs = p7.filter(e=>SHOT.includes(e.reb));
     const goals = shots.filter(e=>e.res==='GOAL').length + p7.filter(e=>e.res==='GOAL').length + rebs.filter(e=>e.reb==='GOAL').length;
-    const twoMin = ev.filter(e=>e.kind==='pen2' && e.side===s).length + ev.filter(e=>e.kind==='poss' && e.side===o && e.res==='2MIN').length;
+    const twoMin = ev.filter(e=>(e.kind==='pen2' || e.kind==='rc') && e.side===s).length + ev.filter(e=>e.kind==='poss' && e.side===o && e.res==='2MIN').length;
     const fouls = ev.filter(e=>e.kind==='foul' && e.side===s).length + ev.filter(e=>e.kind==='poss' && e.side===o && FOULS.includes(e.res)).length;
     let sv=0, gl=0;
     ev.filter(e=>e.kind==='poss' && e.side===o && SHOT.includes(e.res) && !isCC(e.zone)).forEach(e=>{ if(e.res==='SAVE') sv++; if(e.res==='GOAL') gl++; });
@@ -823,7 +833,10 @@ function choose(v){
   else if(st.t==='p7res'){ f.d.res = v; f.steps = [st, P('own','p','Shooter'), ...(v==='SAVE'||v==='POST' ? [{t:'reb'}] : [])]; }
   else if(st.t==='reb'){ if(v!=='NONE') f.d.reb = v; if(v==='7M') f.steps = [...f.steps.slice(0, f.i+1), P('own','rebP','7m provoked by'), P('opp','rebOpp','7m committed by')]; }
   else if(st.t==='p') f.d[st.key] = v;
-  else if(st.t==='zone') f.d.zone = v;
+  else if(st.t==='zone'){ f.d.zone = v;
+    const extra = f.kind==='poss' && f.d.res==='GOAL' && canAssist(f.d.phase, v) ? [P('own','ast','Assist by')]
+      : f.kind==='poss' && f.d.res==='BLOCK' ? [P('opp','blk','Blocked by')] : [];
+    f.steps = [...f.steps.slice(0, f.i+1), ...extra]; }
   else if(st.t==='min') f.d.min = Number(v);
   else if(st.t==='sec') f.d.sec = Number(v);
   f.i++;
@@ -849,7 +862,7 @@ function commit(){
 function stepLabel(f,st){
   const d = f.d, m = match();
   if(st.t==='res'||st.t==='p7res') return d.res ? (RES_LABEL[d.res]||d.res) : null;
-  if(st.t==='p'){ const v = d[st.key]; if(v===undefined) return null; if(v==='none') return 'No one'; return v==='?' ? '?' : '#'+dn(m, st.who==='own'?f.side:other(f.side), v); }
+  if(st.t==='p'){ const v = d[st.key]; if(v===undefined) return null; if(v==='none') return st.key==='ast' ? 'No assist' : 'No one'; return v==='?' ? '?' : '#'+dn(m, st.who==='own'?f.side:other(f.side), v); }
   if(st.t==='zone') return d.zone ? ZONE_LABEL[d.zone] : null;
   if(st.t==='reb') return d.reb ? (d.reb==='7M' ? 'Rebound · 7m' : 'Rebound '+RES_LABEL[d.reb]) : 'No rebound';
   if(st.t==='min') return d.min!=null ? two(d.min)+"'" : null;
@@ -880,7 +893,7 @@ function flowHTML(m){
   } else if(st.t==='p'){
     const side = st.who==='own' ? s : o; const T = sideTeam(m,side);
     q = `${st.label} <span style="color:var(--muted);font-size:15px">· ${esc(T.abbr)}</span>`;
-    body = `<div class="opts pl">${roster(m,side).map(p=>opt(p.id,p.num,p.gk?'gk':'',p.name+(p.gk?' · GK':''))).join('')}${opt('?','?','u','Unknown')}${st.key==='rec'?opt('none','No one','u','own error'):''}</div>`;
+    body = `<div class="opts pl">${roster(m,side).map(p=>opt(p.id,p.num,p.gk?'gk':'',p.name+(p.gk?' · GK':''))).join('')}${opt('?','?','u','Unknown')}${st.key==='rec'?opt('none','No one','u','own error'):''}</div>${st.key==='ast'?`<div class="opts fbz">${opt('none','No assist','t')}</div>`:''}`;
   } else if(st.t==='zone'){
     q = 'Shot zone';
     if(isTrans(f.d.phase)){
@@ -946,7 +959,7 @@ function teamHTML(m){
 /* ---------- players tab ---------- */
 function computePlayers(m, half, s){
   const o = other(s), inH = e => half==='T' || e.half===Number(half), rows = {};
-  const get = id => rows[id ?? '?'] ??= {sh:{g:0,n:0}, m7:{g:0,n:0}, p2:0, p7:0, mb:0, r2:0, r7:0, rb:0, fc:0};
+  const get = id => rows[id ?? '?'] ??= {sh:{g:0,n:0}, m7:{g:0,n:0}, p2:0, p7:0, as:0, mb:0, r2:0, r7:0, rb:0, bl:0, fc:0};
   m.events.filter(inH).forEach(e=>{
     if(e.kind==='poss' && e.side===s){
       if(SHOT.includes(e.res)){ const r = get(e.p); r.sh.n++; if(e.res==='GOAL') r.sh.g++; }
@@ -959,6 +972,9 @@ function computePlayers(m, half, s){
     else if(e.kind==='p7' && e.side===s){ const r = get(e.p); r.m7.n++; if(e.res==='GOAL') r.m7.g++; if(SHOT.includes(e.reb)){ r.sh.n++; if(e.reb==='GOAL') r.sh.g++; } if(e.reb==='7M') get(e.rebP).p7++; }
     if(e.kind==='p7' && e.side===o && e.reb==='7M') get(e.rebOpp).r7++;
     if(e.kind==='poss' && e.side===o && TURN.includes(e.res) && e.rec && e.rec!=='none') get(e.rec).rb++;
+    if(e.kind==='poss' && e.side===s && e.res==='GOAL' && e.ast && e.ast!=='none') get(e.ast).as++;
+    if(e.kind==='poss' && e.side===o && e.res==='BLOCK' && e.blk) get(e.blk).bl++;
+    if(e.kind==='rc' && e.side===s) get(e.p).r2++;   // direct red card counts as a 2'
     if(e.kind==='poss' && e.side===o && FOULS.includes(e.res)) get(e.opp).fc++;
     if(e.kind==='foul' && e.side===s) get(e.p).fc++;
     if(e.kind==='pen2' && e.side===s) get(e.p).r2++;
@@ -966,31 +982,35 @@ function computePlayers(m, half, s){
   });
   Object.values(rows).forEach(r=>{
     // weights agreed with the staff (provisional)
-    const pos = r.sh.g*1 + r.m7.g*1 + r.p2*1.5 + r.p7*1 + r.rb*1.5 + r.fc*0.5;
-    const neg = (r.sh.n-r.sh.g)*1 + (r.m7.n-r.m7.g)*1.5 + r.mb*1.5 + r.r2*1.5 + r.r7*1;
-    r.pm = Math.round((pos - neg)*10)/10; r.any = r.sh.n + r.m7.n + r.p2 + r.p7 + r.rb + r.fc + r.mb + r.r2 + r.r7 > 0;
+    const pos = r.sh.g*1 + r.m7.g*1 + r.p2*1.5 + r.p7*1 + r.as*1 + r.rb*1.5 + r.bl*0.5 + r.fc*0.5;
+    const neg = (r.sh.n-r.sh.g)*1 + (r.m7.n-r.m7.g)*1 + r.mb*1 + r.r2*1 + r.r7*0.5;
+    r.pm = Math.round((pos - neg)*10)/10; r.any = r.sh.n + r.m7.n + r.p2 + r.p7 + r.as + r.rb + r.bl + r.fc + r.mb + r.r2 + r.r7 > 0;
   });
   return rows;
 }
 function playersHTML(m){
   const ratio = v => v.n ? `${v.g} / ${v.n}` : '', pc = v => v.n ? Math.round(100*v.g/v.n)+'%' : '', z = n => n || '';
   const pmf = v => (v>0?'+':'') + (Number.isInteger(v) ? v : v.toFixed(1));
-  const pmCell = r => !r.any ? '<td class="bl"></td>' : `<td class="bl pm ${r.pm>0?'up':r.pm<0?'down':'zero'}">${pmf(r.pm)}</td>`;
-  const cells = r => `<td class="bl">${ratio(r.sh)}</td><td class="pc">${pc(r.sh)}</td><td class="bl">${ratio(r.m7)}</td><td class="pc">${pc(r.m7)}</td><td class="bl">${z(r.p2)}</td><td>${z(r.p7)}</td><td class="mb">${z(r.mb)}</td><td class="bl">${z(r.r2)}</td><td>${z(r.r7)}</td><td class="rb">${z(r.rb)}</td><td>${z(r.fc)}</td>${pmCell(r)}`;
-  const empty = {sh:{g:0,n:0}, m7:{g:0,n:0}, p2:0, p7:0, mb:0, r2:0, r7:0, rb:0, fc:0, pm:0, any:false};
+  const pmCell = r => (!r.any || r.gk) ? '<td class="bl"></td>' : `<td class="bl pm ${r.pm>0?'up':r.pm<0?'down':'zero'}">${pmf(r.pm)}</td>`;
+  const cells = r => `<td class="bl">${ratio(r.sh)}</td><td class="pc">${pc(r.sh)}</td><td class="bl">${ratio(r.m7)}</td><td class="pc">${pc(r.m7)}</td><td class="bl">${z(r.p2)}</td><td>${z(r.p7)}</td><td>${z(r.as)}</td><td class="mb">${z(r.mb)}</td><td class="bl">${z(r.r2)}</td><td>${z(r.r7)}</td><td class="rb">${z(r.rb)}</td><td>${z(r.bl)}</td><td>${z(r.fc)}</td>${pmCell(r)}`;
+  const empty = {sh:{g:0,n:0}, m7:{g:0,n:0}, p2:0, p7:0, as:0, mb:0, r2:0, r7:0, rb:0, bl:0, fc:0, pm:0, any:false};
   const table = s => {
     const T = sideTeam(m,s), rows = computePlayers(m, UI.aHalf, s);
     const inSquad = roster(m,s), ids = new Set(inSquad.map(p=>p.id));
-    const list = [...inSquad, ...T.players.filter(p=>!ids.has(p.id) && rows[p.id]).sort(byNum)];
-    let body = list.map(p=>`<tr class="${p.gk?'gkr':''}"><td class="pl"><span class="num">${p.num}</span> ${esc(p.name)}${p.gk?' <small>GK</small>':''}</td>${cells(rows[p.id]||empty)}</tr>`).join('');
+    const all = [...inSquad, ...T.players.filter(p=>!ids.has(p.id) && rows[p.id]).sort(byNum)];
+    const field = all.filter(p=>!p.gk), gks = all.filter(p=>p.gk);
+    const row = (p,cls='') => `<tr class="${cls}"><td class="pl"><span class="num">${p.num}</span> ${esc(p.name)}${p.gk?' <small>GK</small>':''}</td>${cells({...(rows[p.id]||empty), gk:p.gk})}</tr>`;
+    let body = field.map(p=>row(p)).join('');
     if(rows['?']) body += `<tr><td class="pl"><span class="num">?</span> Unknown</td>${cells(rows['?'])}</tr>`;
-    const tot = Object.values(rows).reduce((a,r)=>({sh:{g:a.sh.g+r.sh.g,n:a.sh.n+r.sh.n}, m7:{g:a.m7.g+r.m7.g,n:a.m7.n+r.m7.n}, p2:a.p2+r.p2, p7:a.p7+r.p7, mb:a.mb+r.mb, r2:a.r2+r.r2, r7:a.r7+r.r7, rb:a.rb+r.rb, fc:a.fc+r.fc, pm:Math.round((a.pm+r.pm)*10)/10, any:a.any||r.any}), {...empty, sh:{g:0,n:0}, m7:{g:0,n:0}});
+    body += gks.map((p,i)=>row(p, 'gkr'+(i===0?' gksep':''))).join('');
+    const gkIds = new Set(gks.map(p=>p.id));
+    const tot = Object.entries(rows).reduce((a,[id,r])=>({sh:{g:a.sh.g+r.sh.g,n:a.sh.n+r.sh.n}, m7:{g:a.m7.g+r.m7.g,n:a.m7.n+r.m7.n}, p2:a.p2+r.p2, p7:a.p7+r.p7, as:a.as+r.as, mb:a.mb+r.mb, r2:a.r2+r.r2, r7:a.r7+r.r7, rb:a.rb+r.rb, bl:a.bl+r.bl, fc:a.fc+r.fc, pm:gkIds.has(id) ? a.pm : Math.round((a.pm+r.pm)*10)/10, any:a.any||r.any}), {...empty, sh:{g:0,n:0}, m7:{g:0,n:0}});
     return `<section class="ptab" style="--tc:${esc(T.color)}"><div class="ptab-h">${esc(T.name)}</div><div class="tw"><table class="pt ptbl">
-      <thead><tr><th rowspan="2" class="pl">Player</th><th colspan="2" class="bl">Shots (no 7m)</th><th colspan="2" class="bl">7m</th><th colspan="3" class="bl">Attack</th><th colspan="4" class="bl">Defense</th><th rowspan="2" class="bl">+/−</th></tr>
-      <tr><th class="bl">Ratio</th><th>%</th><th class="bl">Ratio</th><th>%</th><th class="bl" title="2' provoked">2'</th><th title="7m provoked">7m</th><th title="Missing balls">MB</th><th class="bl" title="2' received">2'</th><th title="7m committed">7m</th><th title="Recovered balls">RB</th><th title="Fouls committed">F</th></tr></thead>
+      <thead><tr><th rowspan="2" class="pl">Player</th><th colspan="2" class="bl">Shots (no 7m)</th><th colspan="2" class="bl">7m</th><th colspan="4" class="bl">Attack</th><th colspan="5" class="bl">Defense</th><th rowspan="2" class="bl">+/−</th></tr>
+      <tr><th class="bl">Ratio</th><th>%</th><th class="bl">Ratio</th><th>%</th><th class="bl" title="2' provoked">2'</th><th title="7m provoked">7m</th><th title="Assists">AS</th><th title="Missing balls">MB</th><th class="bl" title="2' received (direct red card included)">2'</th><th title="7m committed">7m</th><th title="Recovered balls">RB</th><th title="Blocks">BL</th><th title="Fouls committed">F</th></tr></thead>
       <tbody>${body}</tbody><tfoot><tr><td class="pl">TOTAL</td>${cells(tot)}</tr></tfoot></table></div></section>`; };
   return `<div class="ptabs">${table('L')}${table('R')}</div>
-    <p class="foot-note">+/− (provisional weights). Adds: goal 1 · 7m goal 1 · 2' provoked 1.5 · 7m provoked 1 · recovered ball (RB) 1.5 · foul committed (F) 0.5. Subtracts: missed shot 1 · missed 7m 1.5 · missing ball (MB, MB7m included) 1.5 · 2' received 1.5 · 7m committed 1. Shots include C/C and shots after a 7m rebound.</p>`;
+    <p class="foot-note">+/− · adds: goal 1 · 7m goal 1 · 2' provoked 1.5 · 7m provoked 1 · assist (AS) 1 · recovered ball (RB) 1.5 · block (BL) 0.5 · foul committed (F) 0.5. Subtracts: missed shot 1 · missed 7m 1 · missing ball (MB, MB7m included) 1 · 2' received 1 (a direct red card counts as a 2') · 7m committed 0.5. Goalkeepers have no +/−. Shots include C/C and shots after a 7m rebound.</p>`;
 }
 /* ===================== setup (page 1) ===================== */
 function setupHTML(){
@@ -1002,7 +1022,7 @@ function setupHTML(){
   const trow = t => `<div class="li"><span class="dot" style="background:${esc(t.color)}"></span><div class="main"><div class="t1">${esc(t.name)} <span style="color:var(--muted);font-weight:500">${esc(t.abbr)}</span>${t.own?' <span class="badge">Our club</span>':''}</div><div class="t2">${t.players.filter(p=>p.active!==false).length} players · ${t.players.filter(p=>p.gk&&p.active!==false).length} GK</div></div><button class="mini" data-act="edit-team" data-v="${t.id}">Edit</button></div>`;
   const th = DB.settings.theme || 'light';
   const tb = (v,l) => `<button data-act="theme" data-v="${v}" aria-pressed="${th===v}">${l}</button>`;
-  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?"0.9":"0.9 preview"}</span>
+  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?"0.10":"0.10 preview"}</span>
       ${match()&&match().status==='live'?`<button class="tb primary" data-act="open-match" data-v="${UI.matchId}" style="margin-left:auto">Back to bench →</button>`:''}</header>
     <div class="setup"><div class="setup-in">
       <div style="display:flex;flex-direction:column;gap:18px">
@@ -1091,6 +1111,8 @@ function editFields(d){
     if(SHOT.includes(d.res)||TURN.includes(d.res)||d.res==='7M'||d.res==='2MIN') f.push('p');
     if(TURN.includes(d.res)) f.push('rec');
     if(SHOT.includes(d.res)) f.push('zone','gk','passive');
+    if(d.res==='GOAL' && canAssist(d.phase, d.zone)) f.push('ast');
+    if(d.res==='BLOCK') f.push('blk');
     if(['7M','2MIN',...FOULS].includes(d.res)) f.push('opp');
     if(d.res==='7M' && !isTrans(d.phase)) f.push('zone');
     if(d.res==='SFOUL') f.push('gk');
@@ -1121,6 +1143,8 @@ function editModal(M){
     if(k==='reb') out.push(sel('reb','Rebound by the shooter',d.reb||'',[['','No rebound'],...SHOT.map(r=>[r,RES_LABEL[r]]),['7M','7m provoked']]));
     if(k==='rebP') out.push(sel('rebP','7m provoked by',d.rebP,pl(s)));
     if(k==='rebOpp') out.push(sel('rebOpp','7m committed by',d.rebOpp,pl(o)));
+    if(k==='ast') out.push(sel('ast','Assist by',d.ast||'none',[...pl(s),['none','No assist']]));
+    if(k==='blk') out.push(sel('blk','Blocked by',d.blk,pl(o)));
     if(k==='rec') out.push(sel('rec','Ball won by',d.rec||'none',[...pl(o),['none','No one']]));
     if(k==='min') out.push(sel('min','Minute',d.min,nums(61)));
     if(k==='sec') out.push(sel('sec','Second',d.sec,nums(60)));
@@ -1374,7 +1398,7 @@ document.addEventListener('change', ev=>{
     if(k==='passive'){ if(v==='1') d.passive = true; else delete d.passive; return; }
     if(k==='reb' && v===''){ delete d.reb; if(k==='res'||k==='phase') renderModal(); return; }
     d[k] = v;
-    if(k==='phase'||k==='res'||k==='reb') renderModal();
+    if(k==='phase'||k==='res'||k==='reb'||k==='zone') renderModal();
   }
   if(el.dataset.np!==undefined) updatePreview();
   if(el.id==='i-file' && el.files[0]){ const r = new FileReader(); r.onload = () => { document.getElementById('i-text').value = r.result; }; r.readAsText(el.files[0]); }
@@ -1408,7 +1432,7 @@ function seed(){
       if(isTrans(phase)) res = q<.6?'GOAL':q<.72?'SAVE':q<.78?'OUT':q<.86?pick(TURN):q<.93?'FOUL':'STOPFB';
       else res = q<.42?'GOAL':q<.57?'SAVE':q<.61?'POST':q<.64?'OUT':q<.68?'BLOCK':q<.82?pick(TURN):q<.88?'7M':q<.92?'2MIN':q<.97?'FOUL':'SFOUL';
       const e = {kind:'poss', side, half, phase, res};
-      if(SHOT.includes(res)){ e.p = pick(field(side)); if(!isTrans(phase) && rnd()<.12) e.passive = true; e.zone = isTrans(phase) ? (rnd()<.1?pick(['CCL','CCC','CCR']):pick(['L','C','R'])) : pick(POS_ZONES)[1]; if(!isCC(e.zone)) e.gk = m.activeGk[o]; }
+      if(SHOT.includes(res)){ e.p = pick(field(side)); if(!isTrans(phase) && rnd()<.12) e.passive = true; if(res==='BLOCK') e.blk = pick(field(o)); e.zone = isTrans(phase) ? (rnd()<.1?pick(['CCL','CCC','CCR']):pick(['L','C','R'])) : pick(POS_ZONES)[1]; if(!isCC(e.zone)) e.gk = m.activeGk[o]; if(res==='GOAL' && canAssist(phase, e.zone)) e.ast = rnd()<.6 ? pick(field(side)) : 'none'; }
       else if(TURN.includes(res)){ e.p = pick(field(side)); e.rec = rnd()<.6 ? pick(field(o)) : 'none'; }
       else if(res==='7M'||res==='2MIN'){ e.p = pick(field(side)); e.opp = pick(field(o)); if(res==='7M' && !isTrans(phase)) e.zone = pick(POS_ZONES)[1]; if(res==='2MIN'){ e.min = half===1?8+i%20:32+i%25; e.sec = Math.floor(rnd()*60); } }
       else if(FOULS.includes(res)){ e.opp = pick(field(o)); if(res==='SFOUL') e.gk = m.activeGk[o]; }
