@@ -1,4 +1,4 @@
-BENCH LIVE STATS · v0.10.0
+BENCH LIVE STATS · v0.10.1
 
 Puja TOTS aquests fitxers (index.html, manifest.webmanifest, sw.js i la carpeta icons)
 a l'arrel del repositori de GitHub Pages, sense canviar-ne els noms.

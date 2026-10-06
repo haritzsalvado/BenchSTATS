@@ -16,7 +16,7 @@ html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bott
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0} img{max-width:100%} [hidden]{display:none!important}
 </style>
-<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.10.0';</script>
+<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.10.1';</script>
 <title>Bench Live Stats</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -386,6 +386,42 @@ table.ptbl tr.gksep td{border-top:2px solid var(--fg)}
   .sanc{flex-basis:100%}
 }
 #print-host{display:none}
+/* printed match report (only ever rendered inside #print-host) */
+.pp{display:flex;flex-direction:column;gap:6px;transform-origin:top left}
+.pp-h{display:grid;grid-template-columns:1fr auto 1fr;align-items:baseline;gap:14px;border-bottom:2px solid var(--fg);padding-bottom:4px;font-family:var(--f-disp);font-size:15px}
+.pp-h .pp-mid{text-align:center;font-weight:600}
+.pp-h .pp-sub{justify-self:end;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.pp-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pp-side,.pp-chr{display:flex;flex-direction:column;gap:4px;min-width:0}
+.pp-tn{font-family:var(--f-disp);font-weight:700;font-size:13px;text-transform:uppercase;color:var(--tc);border-bottom:2px solid var(--tc)}
+.pp .panel{box-shadow:none}
+.pp .gkrow{min-height:26px;height:auto}
+.pp .gkrow.active{border-color:var(--line);box-shadow:none}
+.pp .gkact{display:none}
+.pp .seq{flex-wrap:wrap;row-gap:2px;overflow:visible}
+.pp .mk{width:7px;height:11px}
+.pp .zabs{min-height:150px}
+.pp .ch-scroll{overflow:visible}
+.pp .ch-grid > div{min-width:19px;font-size:10px;padding:0 1px}
+.pp .ch-grid > div.tom{min-width:4px;width:4px}
+.pp .ch-grid > div.plm{min-width:0}
+.pp .an-cards{gap:8px} .pp .tc{padding:8px;gap:8px}
+.pp table.pt{min-width:0;font-size:11px} .pp table.pt th,.pp table.pt td{padding:4px 5px}
+.pp .ptabs{gap:8px}
+.pp .foot-note{font-size:9.5px}
+.pp .ptab .tw{overflow:visible}
+.pp table.ptbl{table-layout:auto;width:100%}
+.pp table.ptbl th,.pp table.ptbl td{padding:3px 3px;white-space:nowrap}
+.pp table.ptbl thead th{white-space:nowrap;font-size:9.5px;letter-spacing:.03em}
+.pp table.ptbl td.pl{max-width:132px;overflow:hidden;text-overflow:ellipsis;padding-left:5px}
+.pp table.ptbl td.pm{font-size:12px}
+.pp-team .foot-note{display:none}
+.pp-team table.pt th,.pp-team table.pt td{padding:3px 5px}
+.pp-team table.pt{font-size:13px} .pp-team table.pt td.ph{font-size:14px} .pp-team table.pt thead th{font-size:11px}
+.pp .chip{font-size:13.5px}
+.pp .ch-grid > div{font-size:12.5px;min-width:21px}
+.pp .ch-grid sub{font-size:8.5px}
+.pp-team .tiles .tile{padding:5px 3px}
 @media print{
   :root:not(.np), :root[data-theme="dark"]:not(.np){
     --bg:#ffffff; --card:#ffffff; --card2:#f4f7fb; --line:#cfd8e4; --fg:#0e1a2b; --muted:#5a6a80;
@@ -396,36 +432,8 @@ table.ptbl tr.gksep td{border-top:2px solid var(--fg)}
   #app,#toast-host,#modal-host{display:none!important}
   #print-host{display:block}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .pp{break-after:page;page-break-after:always;display:flex;flex-direction:column;gap:6px}
+  .pp{break-after:page;page-break-after:always}
   .pp:last-child{break-after:auto;page-break-after:auto}
-  .pp-h{display:grid;grid-template-columns:1fr auto 1fr;align-items:baseline;gap:14px;border-bottom:2px solid var(--fg);padding-bottom:4px;font-family:var(--f-disp);font-size:15px}
-  .pp-h .pp-mid{text-align:center;font-weight:600}
-  .pp-h .pp-sub{justify-self:end;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-  .pp-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .pp-side,.pp-chr{display:flex;flex-direction:column;gap:4px;min-width:0}
-  .pp-tn{font-family:var(--f-disp);font-weight:700;font-size:13px;text-transform:uppercase;color:var(--tc);border-bottom:2px solid var(--tc)}
-  .pp .panel{box-shadow:none}
-  .pp .gkrow{min-height:26px;height:auto}
-  .pp .gkrow.active{border-color:var(--line);box-shadow:none}
-  .pp .gkact{display:none}
-  .pp .seq{flex-wrap:wrap;row-gap:2px;overflow:visible}
-  .pp .mk{width:7px;height:11px}
-  .pp .zabs{min-height:150px}
-  .pp .ch-scroll{overflow:visible}
-  .pp .ch-grid > div{min-width:19px;font-size:10px;padding:0 1px}
-  .pp .ch-grid > div.tom{min-width:4px;width:4px}
-  .pp .ch-grid > div.plm{min-width:0}
-  .pp .an-cards{gap:8px} .pp .tc{padding:8px;gap:8px}
-  .pp table.pt{min-width:0;font-size:11px} .pp table.pt th,.pp table.pt td{padding:4px 5px}
-  .pp .ptabs{gap:8px}
-  .pp .foot-note{font-size:9.5px}
-  .pp-team .foot-note{display:none}
-  .pp-team table.pt th,.pp-team table.pt td{padding:3px 5px}
-  .pp-team table.pt{font-size:13px} .pp-team table.pt td.ph{font-size:14px} .pp-team table.pt thead th{font-size:11px}
-  .pp .chip{font-size:13.5px}
-  .pp .ch-grid > div{font-size:12.5px;min-width:21px}
-  .pp .ch-grid sub{font-size:8.5px}
-  .pp-team .tiles .tile{padding:5px 3px}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -1022,7 +1030,7 @@ function setupHTML(){
   const trow = t => `<div class="li"><span class="dot" style="background:${esc(t.color)}"></span><div class="main"><div class="t1">${esc(t.name)} <span style="color:var(--muted);font-weight:500">${esc(t.abbr)}</span>${t.own?' <span class="badge">Our club</span>':''}</div><div class="t2">${t.players.filter(p=>p.active!==false).length} players · ${t.players.filter(p=>p.gk&&p.active!==false).length} GK</div></div><button class="mini" data-act="edit-team" data-v="${t.id}">Edit</button></div>`;
   const th = DB.settings.theme || 'light';
   const tb = (v,l) => `<button data-act="theme" data-v="${v}" aria-pressed="${th===v}">${l}</button>`;
-  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?"0.10":"0.10 preview"}</span>
+  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?"0.10.1":"0.10.1 preview"}</span>
       ${match()&&match().status==='live'?`<button class="tb primary" data-act="open-match" data-v="${UI.matchId}" style="margin-left:auto">Back to bench →</button>`:''}</header>
     <div class="setup"><div class="setup-in">
       <div style="display:flex;flex-direction:column;gap:18px">
@@ -1222,6 +1230,14 @@ function printMatch(m){
     + `<section class="pp">${head('Analysis · Players · full match')}<div class="an-in">${playersHTML(m)}</div></section>`;
   UI.aHalf = keepHalf; UI.viewHalf = keepView; UI.printing = false;
   const host = document.getElementById('print-host'); host.innerHTML = html;
+  // measure every page at A4 landscape size (281 x 194 mm printable) and shrink the ones that would spill onto a second sheet
+  host.style.cssText = 'display:block;position:absolute;left:-30000px;top:0;width:1062px;visibility:hidden';
+  const PAGE_H = 725;
+  host.querySelectorAll('.pp').forEach(pg=>{
+    const h = pg.getBoundingClientRect().height, w = Math.max(...[...pg.querySelectorAll('table, .pp-cols, .pp-chr')].map(el=>el.scrollWidth + el.getBoundingClientRect().left - pg.getBoundingClientRect().left), 0);
+    const z = Math.min(1, PAGE_H / h, 1062 / Math.max(w, 1));
+    if(z < 1) pg.style.zoom = z.toFixed(3); });
+  host.style.cssText = '';
   const keepTitle = document.title; document.title = `${fullCode(m)} PELIGROGRAMA`;   // default PDF file name
   const done = () => { host.innerHTML = ''; document.title = keepTitle; window.removeEventListener('afterprint', done); };
   window.addEventListener('afterprint', done);
