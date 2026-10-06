@@ -16,7 +16,7 @@ html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bott
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0} img{max-width:100%} [hidden]{display:none!important}
 </style>
-<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.10.1';</script>
+<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.11.0';</script>
 <title>Bench Live Stats</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -272,6 +272,21 @@ textarea{font-family:var(--f-num);font-size:13px;min-height:160px;resize:vertica
 .mini{border:1px solid var(--line);background:var(--card2);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:600;min-height:34px}
 .mini.danger{color:var(--red);border-color:var(--red)}
 .mini.mv{min-width:38px;font-size:13px}
+.st-warn{color:var(--sf)!important;font-weight:600} .st-bad{color:var(--red)!important;font-weight:700}
+.ck-dots{display:flex;justify-content:center;gap:12px}
+.ck-dot{width:52px;height:52px;border-radius:50%;border:2px solid var(--line);background:var(--card2);display:flex;align-items:center;justify-content:center;padding:0;position:relative}
+.ck-dot svg{width:26px;height:26px}
+.ck-dot.on{border-color:var(--fg);background:var(--card);box-shadow:0 0 0 3px color-mix(in srgb,var(--fg) 15%,transparent)}
+.ck-dot.ck-ok::after,.ck-dot.ck-warn::after,.ck-dot.ck-bad::after{content:"";position:absolute;right:1px;bottom:1px;width:12px;height:12px;border-radius:50%;border:2px solid var(--card)}
+.ck-dot.ck-ok::after{background:var(--fb)} .ck-dot.ck-warn::after{background:var(--sf)} .ck-dot.ck-bad::after{background:var(--red)}
+.ck-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:10px 6px 4px}
+.ck-big{width:96px;height:96px;color:var(--fg)}
+.ck-big.ck-ok{color:var(--fb)} .ck-big.ck-warn{color:var(--sf)} .ck-big.ck-bad{color:var(--red)}
+.ck-n{font-family:var(--f-num);font-size:12px;color:var(--muted)}
+.ck-t{font-family:var(--f-disp);font-size:26px;margin:0;letter-spacing:.02em}
+.ck-pill{font-size:13px;font-weight:700;border-radius:20px;padding:5px 12px;border:1.5px solid var(--line);color:var(--muted)}
+.ck-pill.ck-ok{border-color:var(--fb);color:var(--fb)} .ck-pill.ck-warn{border-color:var(--sf);color:var(--sf)} .ck-pill.ck-bad{border-color:var(--red);color:var(--red)}
+.ck-txt{max-width:52ch;line-height:1.5;margin:4px 0;font-size:15px}
 .mini[disabled]{opacity:.35}
 .sq-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .sq-col{display:flex;flex-direction:column;gap:8px;min-width:0}
@@ -386,6 +401,7 @@ table.ptbl tr.gksep td{border-top:2px solid var(--fg)}
   .sanc{flex-basis:100%}
 }
 #print-host{display:none}
+#save-alert{position:fixed;left:0;right:0;top:0;z-index:60;background:var(--red);color:#fff;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top,0px));font-size:15px;text-align:center;box-shadow:0 4px 18px rgba(0,0,0,.3)}
 /* printed match report (only ever rendered inside #print-host) */
 .pp{display:flex;flex-direction:column;gap:6px;transform-origin:top left}
 .pp-h{display:grid;grid-template-columns:1fr auto 1fr;align-items:baseline;gap:14px;border-bottom:2px solid var(--fg);padding-bottom:4px;font-family:var(--f-disp);font-size:15px}
@@ -444,6 +460,7 @@ table.ptbl tr.gksep td{border-top:2px solid var(--fg)}
 <div id="toast-host"></div>
 <div id="modal-host"></div>
 <div id="print-host" aria-hidden="true"></div>
+<div id="save-alert" role="alert" hidden><b>⚠ Data NOT saved.</b> The tablet refused to store the last action (storage full or blocked). Make a backup now: ☰ Matches → Backup all.</div>
 
 <script>
 /* ===================== constants ===================== */
@@ -496,7 +513,21 @@ function load(){
       if(!onlyDemo) return migrate(o); } }catch(e){}
   return seed();
 }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){} }
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(DB)); if(UI.saveError){ UI.saveError = false; saveAlert(); } }
+  catch(e){ UI.saveError = true; saveAlert(); }
+}
+function saveAlert(){
+  const el = document.getElementById('save-alert'); if(!el) return;
+  el.hidden = !UI.saveError;
+}
+// storage room: browsers give this app about 5 MB; a long match takes about 0.02 MB (0.04 counted, for margin)
+const STORE_LIMIT = 5000000, MATCH_SIZE = 40000;
+function storageInfo(){
+  let used = 0; try{ used = (localStorage.getItem(KEY) || '').length + KEY.length; }catch(e){}
+  const pct = Math.round(100*used/STORE_LIMIT), left = Math.max(0, Math.floor((STORE_LIMIT-used)/MATCH_SIZE));
+  return {used, pct, left, level: (pct>=85 || left<3) ? 'bad' : pct>=60 ? 'warn' : 'ok'};
+}
 function migrate(o){
   o.settings = o.settings || {theme:'light'};
   o.teams.forEach(t=>{ const seen = new Set(t.players.map(p=>p.id).filter(Boolean));
@@ -1026,11 +1057,11 @@ function setupHTML(){
   const mrow = m => { const sc = score(m);
     return `<div class="li"><div class="main"><div class="t1">${esc(fullCode(m))} <span class="num" style="color:var(--muted)">${sc.L}–${sc.R}</span></div><div class="t2">${esc(team(m.homeId)?.name||'?')} vs ${esc(team(m.awayId)?.name||'?')} · ${m.events.length} actions</div></div>
       ${m.status==='live' ? `<button class="mini" data-act="open-match" data-v="${m.id}">Open bench</button><button class="mini" data-act="finish-ask" data-v="${m.id}">Finish</button>` : `<button class="mini" data-act="open-match" data-v="${m.id}">View</button>`}
-      ${m.status==='live' ? `<button class="mini" data-act="squad" data-v="${m.id}">Squad</button>` : ''}<button class="mini" data-act="export-match" data-v="${m.id}">Backup</button><button class="mini" data-act="print" data-v="${m.id}">Print / PDF</button><button class="mini danger" data-act="del-match-ask" data-v="${m.id}">Delete</button></div>`; };
+      ${m.status==='live' ? `<button class="mini" data-act="squad" data-v="${m.id}">Squad</button><button class="mini" data-act="check" data-v="${m.id}">Checklist</button>` : ''}<button class="mini" data-act="export-match" data-v="${m.id}">Backup</button><button class="mini" data-act="print" data-v="${m.id}">Print / PDF</button><button class="mini danger" data-act="del-match-ask" data-v="${m.id}">Delete</button></div>`; };
   const trow = t => `<div class="li"><span class="dot" style="background:${esc(t.color)}"></span><div class="main"><div class="t1">${esc(t.name)} <span style="color:var(--muted);font-weight:500">${esc(t.abbr)}</span>${t.own?' <span class="badge">Our club</span>':''}</div><div class="t2">${t.players.filter(p=>p.active!==false).length} players · ${t.players.filter(p=>p.gk&&p.active!==false).length} GK</div></div><button class="mini" data-act="edit-team" data-v="${t.id}">Edit</button></div>`;
   const th = DB.settings.theme || 'light';
   const tb = (v,l) => `<button data-act="theme" data-v="${v}" aria-pressed="${th===v}">${l}</button>`;
-  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?"0.10.1":"0.10.1 preview"}</span>
+  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?"0.11":"0.11 preview"}</span>
       ${match()&&match().status==='live'?`<button class="tb primary" data-act="open-match" data-v="${UI.matchId}" style="margin-left:auto">Back to bench →</button>`:''}</header>
     <div class="setup"><div class="setup-in">
       <div style="display:flex;flex-direction:column;gap:18px">
@@ -1043,7 +1074,9 @@ function setupHTML(){
         <div class="card"><div class="card-h"><h3>Display</h3><div class="seg" role="group" aria-label="Theme">${tb('light','Light')}${tb('dark','Dark')}${tb('auto','Auto')}</div></div>
           <p class="hint">Auto follows the tablet's light or dark setting.</p></div>
         <div class="card"><div class="card-h"><h3>Backup</h3></div>
-          <p class="hint">Make a backup after each match and send it to your PC. If the tablet loses its data, restore it from that file.</p>
+          <p class="hint">Make a backup after each match and send it to your PC. If the tablet loses its data, restore it from that file. The app also saves a copy in Downloads automatically at half-time and when you finish a match.</p>
+          ${(()=>{ const si = storageInfo(); return `<p class="hint st-${si.level}">Storage: ${si.pct}% used · room for about ${si.left} more matches.${si.level!=='ok' ? ' Make a backup and delete old matches.' : ''}</p>`; })()}
+          <p class="hint">Last backup: ${DB.settings.lastBackup ? new Date(DB.settings.lastBackup).toLocaleString() : 'never'}</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" data-act="export-all">Backup all</button><button class="mini" data-act="import">Restore backup</button></div></div>
         <div class="card"><div class="card-h"><h3>Teams</h3><button class="tb" data-act="edit-team">+ New team</button></div>
           ${DB.teams.length ? DB.teams.map(trow).join('') : '<p class="hint">Add your club and the opponents.</p>'}</div>
@@ -1057,7 +1090,7 @@ function closeModal(){ UI.modal = null; renderModal(); }
 function renderModal(){
   const host = document.getElementById('modal-host'), M = UI.modal;
   if(!M){ host.innerHTML=''; UI.lastModalType = null; return; }
-  const map = {team:teamModal, newmatch:newMatchModal, log:logModal, edit:editModal, export:exportModal, import:importModal, confirm:confirmModal, info:infoModal, score:scoreModal, zoom:zoomModal, squad:squadModal};
+  const map = {team:teamModal, newmatch:newMatchModal, log:logModal, edit:editModal, export:exportModal, import:importModal, confirm:confirmModal, info:infoModal, score:scoreModal, zoom:zoomModal, squad:squadModal, check:checkModal};
   const prevBody = host.querySelector('.m-body'), keep = prevBody && UI.lastModalType===M.type ? prevBody.scrollTop : 0;
   host.innerHTML = `<div class="scrim" data-act="scrim">${map[M.type](M)}</div>`;
   UI.lastModalType = M.type;
@@ -1243,6 +1276,53 @@ function printMatch(m){
   window.addEventListener('afterprint', done);
   setTimeout(()=>{ try{ window.print(); }catch(e){ done(); toast('Printing is not available on this device.'); } }, 80);
 }
+const CK_ICON = {
+  battery:'<rect x="2" y="7" width="17" height="10" rx="2"/><path d="M21.5 10.5v3"/><rect x="4.5" y="9.5" width="9" height="5" rx=".5" fill="currentColor" stroke="none"/>',
+  dnd:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  rotate:'<rect x="2.5" y="7" width="19" height="11" rx="2"/><path d="M5 4.5c3.8-2.4 10.2-2.4 14 0"/><rect x="9.5" y="11.5" width="5" height="4" rx=".8"/><path d="M10.6 11.5v-1.2a1.4 1.4 0 0 1 2.8 0v1.2"/>',
+  storage:'<ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/>',
+  backup:'<path d="M12 3v11m0 0-4-4m4 4 4-4M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>' };
+function checkSteps(){
+  const b = UI.batt, si = storageInfo(), last = DB.settings.lastBackup, age = last ? (Date.now()-last)/3600000 : null;
+  const land = (screen.orientation?.type || '').startsWith('landscape') || window.innerWidth > window.innerHeight;
+  return [
+    {k:'battery', t:'Battery', st: !b ? ['none','Check the level on the tablet'] : (b.level>=0.8 || b.charging) ? ['ok', `${Math.round(b.level*100)}%${b.charging?' · charging':''}`] : b.level>=0.4 ? ['warn', `${Math.round(b.level*100)}% · charge it if you can`] : ['bad', `${Math.round(b.level*100)}% · charge it before the match`],
+      txt:'Charge to 100% before the warm-up. Keep a power bank and a cable in the bag.'},
+    {k:'dnd', t:'Do not disturb', st:['none','The app cannot check this'],
+      txt:'Swipe down from the top of the screen and turn on Do not disturb, so no call or notification covers the bench during the match.'},
+    {k:'rotate', t:'Landscape locked', st: land ? ['ok','Tablet is in landscape now'] : ['warn','Turn the tablet to landscape'],
+      txt:'With the tablet in landscape, open quick settings and turn auto-rotate off, so the screen does not flip when you move it.'},
+    {k:'storage', t:'Storage', st:[si.level, `${si.pct}% used · room for about ${si.left} more matches${UI.persisted===false?' · not protected from cleanup':''}`],
+      txt: si.level==='ok' ? 'There is plenty of room for today’s match.' : 'Make a backup of everything and delete old completed matches in ☰ Matches before you start.'},
+    {k:'backup', t:'Backup', st: age===null ? ['bad','No backup made yet'] : age<24 ? ['ok', `Last backup ${Math.round(age*60)<60 ? Math.round(age*60)+' min' : Math.round(age)+' h'} ago`] : ['warn', `Last backup ${Math.round(age/24)} day(s) ago`],
+      txt:'Make a backup of everything now, so teams and past matches are safe before the match starts.', action:'<button class="tb" data-act="check-backup">Backup all now</button>'}
+  ];
+}
+function checkModal(M){
+  const steps = checkSteps(), i = M.step, st = steps[i], m = DB.matches.find(x=>x.id===M.id);
+  const dots = steps.map((x,k)=>`<button class="ck-dot ${k===i?'on':''} ck-${x.st[0]}" data-act="check-go" data-v="${k}" aria-label="${esc(x.t)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${CK_ICON[x.k]}</svg></button>`).join('');
+  const label = {ok:'OK', warn:'Check', bad:'Action needed', none:'Check it yourself'}[st.st[0]];
+  return mShell(`Pre-match checklist · ${m ? fullCode(m) : ''}`, `
+    <div class="ck-dots">${dots}</div>
+    <div class="ck-card">
+      <svg class="ck-big ck-${st.st[0]}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${CK_ICON[st.k]}</svg>
+      <div class="ck-n">${i+1} / ${steps.length}</div>
+      <h3 class="ck-t">${st.t}</h3>
+      <span class="ck-pill ck-${st.st[0]}">${label} · ${esc(st.st[1])}</span>
+      <p class="ck-txt">${st.txt}</p>
+      ${st.action||''}
+    </div>`,
+    `<button class="mini" data-act="check-skip">Skip checklist</button><span style="flex:1"></span><button class="tb" data-act="check-go" data-v="${i-1}" ${i===0?'disabled':''}>◀ Back</button><button class="tb primary" data-act="check-go" data-v="${i+1}">${i===steps.length-1 ? 'Ready ✓' : 'Done ▶'}</button>`, true);
+}
+function readSensors(){
+  try{ navigator.getBattery?.().then(b=>{ const upd = () => { UI.batt = {level:b.level, charging:b.charging}; if(UI.modal?.type==='check') renderModal(); }; upd(); b.addEventListener('levelchange',upd); b.addEventListener('chargingchange',upd); }); }catch(e){}
+  try{ navigator.storage?.persisted?.().then(v=>{ UI.persisted = v; }); }catch(e){}
+}
+// shown when the bench opens for a live match that has no actions yet
+function maybeChecklist(){
+  const m = match();
+  if(UI.view==='match' && m && m.status==='live' && !m.events.length && !m.checkDone && !(UI.ckSkipped||{})[m.id] && !UI.modal) openModal('check',{id:m.id, step:0});
+}
 function infoModal(M){ return mShell(M.title, `<p style="margin:0;line-height:1.5">${esc(M.text)}</p>`, `<button class="tb primary" data-act="close-modal">OK</button>`); }
 
 /* ===================== toast, timer & wake lock ===================== */
@@ -1260,11 +1340,23 @@ function tick(){
 setInterval(tick, 500);
 let wl = null;
 async function wake(){ try{ if(!wl && navigator.wakeLock){ wl = await navigator.wakeLock.request('screen'); wl.addEventListener('release',()=>{wl=null;}); } }catch(e){} }
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && UI.view==='match' && match()?.status==='live') wake(); });
 
+function downloadText(text,name){
+  try{ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text],{type:'application/json'})); a.download = name; document.body.appendChild(a); a.click(); a.remove(); return true; }catch(e){ return false; }
+}
+function markBackup(){ DB.settings.lastBackup = Date.now(); save(); }
 function exportFile(obj,name){
   const text = JSON.stringify(obj,null,1);
-  try{ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text],{type:'application/json'})); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }catch(e){}
+  downloadText(text,name); markBackup();
   openModal('export',{text,name});
+}
+const matchBackup = mt => ({format:'benchlive-match', version:2, exported:new Date().toISOString(), teams:[team(mt.homeId),team(mt.awayId)].filter(Boolean), match:mt});
+// automatic copy in Downloads: date_time_match_part.json (sorted by date in the folder)
+function autoBackup(mt, part){
+  const d = new Date(), stamp = `${d.getFullYear()}-${two(d.getMonth()+1)}-${two(d.getDate())}_${two(d.getHours())}-${two(d.getMinutes())}`;
+  const name = `${stamp}_${String(mt.code).replace(/[^\w.-]+/g,'_')}_${part}.json`;
+  if(downloadText(JSON.stringify(matchBackup(mt),null,1), name)){ markBackup(); setTimeout(()=>toast(`Backup saved in Downloads · ${name}`), 400); }
 }
 function mergeImport(obj){
   const teams = obj.teams || [], matches = obj.matches || (obj.match ? [obj.match] : []);
@@ -1308,7 +1400,7 @@ document.addEventListener('click', ev=>{
       if(m.half===2){ UI.viewHalf = n===1 ? 1 : null; UI.flow = null; render(); break; }   // looking back at the 1st half, no confirmation
       if(n===2 && !ro(m)) openModal('confirm',{title:'Start the 2nd half?',text:'New actions will be registered in the 2nd half. Maps, timelines and goalkeeper rows start empty; tap 1st half at any time to look back.',ok:'half-go',okLabel:'Start 2nd half',v});
       break; }
-    case 'half-go': m.half = Number(v); UI.viewHalf = null; UI.flow=null; save(); closeModal(); render(); toast('2nd half started'); break;
+    case 'half-go': m.half = Number(v); UI.viewHalf = null; UI.flow=null; save(); closeModal(); render(); toast('2nd half started'); autoBackup(m, '1st-half'); break;
     case 'undo': { if(!m || ro(m) || !m.events.length) break; const e = m.events.pop(); save(); render(); toast(`Undone: ${sideTeam(m,e.side).abbr} · ${describe(m,e)}`); break; }
     case 'log': openModal('log'); break;
     case 'analysis': UI.analysis = true; UI.flow=null; UI.sanc=null; render(); break;
@@ -1316,8 +1408,15 @@ document.addEventListener('click', ev=>{
     case 'ahalf': UI.aHalf = v; render(); break;
     case 'atab': UI.aTab = v; render(); break;
     case 'go-setup': UI.viewHalf=null; UI.view='setup'; UI.flow=null; UI.analysis=false; UI.sanc=null; render(); break;
-    case 'open-match': UI.viewHalf=null; UI.matchId = v; UI.view='match'; UI.analysis=false; UI.flow=null; UI.sanc=null; render(); break;
+    case 'open-match': UI.viewHalf=null; UI.matchId = v; UI.view='match'; UI.analysis=false; UI.flow=null; UI.sanc=null; closeModal(); render(); maybeChecklist(); break;
     case 'close-modal': closeModal(); break;
+    case 'check': openModal('check',{id:v, step:0}); break;
+    case 'check-go': { const n = Number(v), total = checkSteps().length;
+      if(n >= total){ const mt = DB.matches.find(x=>x.id===UI.modal.id); if(mt){ mt.checkDone = true; save(); } closeModal(); toast('Checklist done · good match!'); break; }
+      UI.modal.step = Math.max(0, n); renderModal(); break; }
+    case 'check-skip': UI.ckSkipped = {...(UI.ckSkipped||{}), [UI.modal.id]:true}; closeModal(); break;
+    case 'check-backup': { const text = JSON.stringify({format:'benchlive-all', version:2, exported:new Date().toISOString(), settings:DB.settings, teams:DB.teams, matches:DB.matches},null,1);
+      if(downloadText(text, `benchlive-backup-${today()}.json`)){ markBackup(); toast('Backup saved in Downloads'); } renderModal(); break; }
     case 'to-del': { const e = m.events.filter(x=>x.kind==='to' && x.side===side)[Number(v)]; if(!e) break;
       openModal('confirm',{title:'Delete this time-out?',text:`${sideTeam(m,side).name} · time-out ${Number(v)+1}${e.min!=null?' · '+tmStr(e):''}`,ok:'to-del-go',okLabel:'Delete time-out',v:e.id,danger:true}); break; }
     case 'to-del-go': m.events = m.events.filter(e=>e.id!==v); save(); closeModal(); render(); toast('Time-out deleted'); break;
@@ -1383,7 +1482,7 @@ document.addEventListener('click', ev=>{
       mt.activeGk.L = gkList(mt,'L')[0]?.id ?? null; mt.activeGk.R = gkList(mt,'R')[0]?.id ?? null;
       save(); UI.view='match'; render(); openModal('squad',{id:mt.id}); break; }
     case 'finish-ask': openModal('confirm',{title:'Finish match?',text:'The match will move to completed matches and become read only. Export a JSON backup afterwards.',ok:'finish',okLabel:'Finish match',v}); break;
-    case 'finish': { const mt = DB.matches.find(x=>x.id===v); mt.status='done'; mt.breakEnd=null; save(); closeModal(); render(); toast('Match finished'); break; }
+    case 'finish': { const mt = DB.matches.find(x=>x.id===v); mt.status='done'; mt.breakEnd=null; save(); closeModal(); render(); toast('Match finished'); autoBackup(mt, 'all-game'); break; }
     case 'del-match-ask': { const mt = DB.matches.find(x=>x.id===v);
       openModal('confirm',{title:'Delete match?',text:`${fullCode(mt)} and its ${mt.events.length} actions will be deleted from this tablet. This cannot be undone. Export a JSON backup first if you want to keep it.`,ok:'del-match',okLabel:'Delete match',v,danger:true}); break; }
     case 'del-match': { const mt = DB.matches.find(x=>x.id===v);
@@ -1475,6 +1574,8 @@ DB = load();
 applyTheme();
 { const live = [...DB.matches].reverse().find(m=>m.status==='live'); if(live) UI.matchId = live.id; else UI.view='setup'; }
 render();
+readSensors();
+maybeChecklist();
 </script>
 
 <script>
