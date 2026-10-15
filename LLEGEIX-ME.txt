@@ -1,6 +1,8 @@
-BENCH LIVE STATS · v0.11.0
+BENCH LIVE STATS · v0.12.0
 
 Puja TOTS aquests fitxers (index.html, manifest.webmanifest, sw.js i la carpeta icons)
 a l'arrel del repositori de GitHub Pages, sense canviar-ne els noms.
-Per actualitzar l'app, substitueix els fitxers per la nova versió a la mateixa adreça.
+Deixa GitHub Pages SEMPRE activat (Settings → Pages → main / root). No el desactivis mai.
+Per actualitzar l'app, substitueix els fitxers a la mateixa adreça. La tablet baixa la versió nova
+però no la posa en marxa fins que toques "Update" a la pàgina 1 de l'app (mai el dia de partit).
 Les dades dels partits es guarden només a la tablet: fes una còpia JSON després de cada partit.
