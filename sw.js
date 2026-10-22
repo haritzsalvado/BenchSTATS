@@ -1,7 +1,7 @@
-// Bench Live Stats service worker · v0.12.0
+// Bench Live Stats service worker · v0.13.0
 // The tablet keeps running the version you approved ("current"). New versions are downloaded in the
 // background but only switched on when the app asks for it (Update button on page 1).
-const VERSION = '0.12.0';
+const VERSION = '0.13.0';
 const CACHE = 'bench-app-' + VERSION;
 const META = 'bench-meta', FONTS = 'bench-fonts';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'];

@@ -16,7 +16,7 @@ html{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bott
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0} img{max-width:100%} [hidden]{display:none!important}
 </style>
-<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.12.0';</script>
+<script>window.BENCH_PWA = true; window.BENCH_VERSION = '0.13.0';</script>
 <title>Bench Live Stats</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -163,7 +163,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .ch-grid{display:grid;grid-auto-flow:column;grid-template-rows:15px repeat(5,21px);grid-auto-columns:max-content}
 .ch-grid > div{border-left:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--f-num);font-size:11px;font-weight:700;white-space:nowrap;padding:0 2px;min-width:24px}
 .ch-grid > div.tom{min-width:5px;width:5px;padding:0;background:var(--mc);border:0}
-.ch-grid > div.plm{min-width:0;padding:0 2px;border-left:2px dashed var(--mc);color:var(--mc);font-size:9px}
+.ch-grid > div.plb{border-left:2px dashed var(--mc)}
+.ch-grid > div.plh{color:var(--mc);font-weight:800}
 .pv{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:2px}
 .ch-grid .hn{font-size:9px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--line)}
 .ch-grid .h2{border-left:2px solid var(--fg)}
@@ -247,7 +248,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .zoom .ch-labels span{font-size:17px;padding-right:10px}
 .zoom .ch-grid > div{font-size:18px;padding:0 6px;min-width:44px}
 .zoom .ch-grid > div.tom{min-width:8px;width:8px}
-.zoom .ch-grid > div.plm{min-width:0;font-size:13px}
+.zoom .ch-grid > div.plh{font-size:12px}
 .zoom .ch-grid .hn{font-size:12px}
 .zoom .ch-grid sub{font-size:11px;top:4px}
 [data-act="zoom"]{cursor:zoom-in}
@@ -423,7 +424,6 @@ table.ptbl tr.gksep td{border-top:2px solid var(--fg)}
 .pp .ch-scroll{overflow:visible}
 .pp .ch-grid > div{min-width:19px;font-size:10px;padding:0 1px}
 .pp .ch-grid > div.tom{min-width:4px;width:4px}
-.pp .ch-grid > div.plm{min-width:0}
 .pp .an-cards{gap:8px} .pp .tc{padding:8px;gap:8px}
 .pp table.pt{min-width:0;font-size:11px} .pp table.pt th,.pp table.pt td{padding:4px 5px}
 .pp .ptabs{gap:8px}
@@ -483,7 +483,8 @@ const RES_LABEL = {GOAL:'Goal',SAVE:'Save',POST:'Post',OUT:'Out',BLOCK:'Block','
 const POSITIVE = new Set(['GOAL','7M','2MIN']);
 const NEUTRAL  = new Set(['FOUL','SFOUL','STOPFB']);
 // a possession always closes on these; fouls close it only in transition (in positional the same team keeps the ball)
-const isDefinite = e => ['7M','2MIN','STOPFB'].includes(e.res) || (isTrans(e.phase) && FOULS.includes(e.res));
+// a goal, a shot out and a turnover always close the possession, even if the same team appears to keep the ball after (a tap on the wrong panel)
+const isDefinite = e => ['7M','2MIN','STOPFB','GOAL','OUT'].includes(e.res) || TURN.includes(e.res) || (isTrans(e.phase) && FOULS.includes(e.res));
 const POS_ZONES = [
   ['lw','LW','Left wing'],['rw','RW','Right wing'],
   ['pnl','PNL','Penetr. L'],['pnc','PNC','Penetr. C'],['pnr','PNR','Penetr. R'],
@@ -803,7 +804,7 @@ function courtHTML(m,s,h=vh(m)){
   return `<div class="panel court" data-act="zoom" data-v="court" data-side="${s}" aria-label="Positional shot map, tap to enlarge">${courtSVG()}<div class="zabs">${cells}</div></div>`;
 }
 function fbMapHTML(m,s,hv=vh(m)){
-  const shots = m.events.filter(e=>e.half===hv && e.kind==='poss' && e.side===s && SHOT.includes(e.res) && isTrans(e.phase));
+  const shots = m.events.filter(e=>e.half===hv && e.kind==='poss' && e.side===s && (SHOT.includes(e.res) || (e.res==='7M' && e.zone)) && isTrans(e.phase));
   const rows = [['1w',e=>e.phase==='FB1w'&&!isCC(e.zone)],['Fl',e=>e.phase==='FBfl'&&!isCC(e.zone)],['2w',e=>e.phase==='FB2w'&&!isCC(e.zone)],['3w',e=>e.phase==='FB3w'&&!isCC(e.zone)],['AG',e=>e.phase.startsWith('AG')&&!isCC(e.zone)],['C/C',e=>isCC(e.zone)]];
   let h = `<span></span><span class="hd">L</span><span class="hd">C</span><span class="hd">R</span>`;
   rows.forEach(([lab,f])=>{ h += `<span class="rl">${lab}</span>`;
@@ -828,19 +829,26 @@ function chronoHTML(m,s,h=vh(m)){
   cols.forEach(c=>{ const first = m.events.indexOf(c[0]); while(k<markers.length && markers[k].i<first) items.push({mk:markers[k++].e}); items.push({col:c}); });
   while(k<markers.length) items.push({mk:markers[k++].e});
   const rowOf = e => isTrans(e.phase) ? 'FB' : e.phase;
-  let g = '', n = 0;
+  // a playmaker change takes no column: it is drawn as a dashed line on the left edge of the next possession, with ⇄number above it.
+  // when it falls in a time-out (no possession in between) the time-out bar is the line and the label sits right after it.
+  let g = '', n = 0, pl = null, plTO = false, lastTO = false;
+  const plCol = sideTeam(m,s).color;
+  const plHead = (num) => `<div class="hn plh${plTO?'':' plb'}" style="--mc:${esc(plCol)}" title="${esc(describe(m,pl))}${num?' · possession '+num:''}">⇄${esc(dn(m,s,pl.p))}</div>`;
   items.forEach(it=>{
     if(it.mk){ const e = it.mk, col = sideTeam(m,e.side).color;
-      if(e.kind==='to'){ g += `<div class="tom" style="--mc:${esc(col)}" title="${esc(sideTeam(m,e.side).abbr+' time-out'+(e.min!=null?' · '+tmStr(e):''))}"></div>` + rows.map(()=>`<div class="tom" style="--mc:${esc(col)}"></div>`).join(''); }
-      else { g += `<div class="plm hn" style="--mc:${esc(col)}" title="${esc(describe(m,e))}">⇄${esc(dn(m,s,e.p))}</div>` + rows.map(()=>`<div class="plm" style="--mc:${esc(col)}"></div>`).join(''); }
+      if(e.kind==='to'){ g += `<div class="tom" style="--mc:${esc(col)}" title="${esc(sideTeam(m,e.side).abbr+' time-out'+(e.min!=null?' · '+tmStr(e):''))}"></div>` + rows.map(()=>`<div class="tom" style="--mc:${esc(col)}"></div>`).join(''); lastTO = true; if(pl) plTO = true; }
+      else { pl = e; plTO = lastTO; }
       return; }
     const c = it.col; n++;
-    g += `<div class="hn">${n}</div>` + rows.map(r=>{
+    const pc = pl && !plTO ? ' plb' : '', ps = pl ? ` style="--mc:${esc(plCol)}"` : '';
+    g += (pl ? plHead(n) : `<div class="hn">${n}</div>`) + rows.map(r=>{
       const here = c.filter(e=>rowOf(e)===r);
-      if(!here.length) return `<div></div>`;
-      return `<div class="${markCls(here[here.length-1])}" title="${esc(here.map(e=>describe(m,e)).join(' | '))}">${here.map(e=>markTxt(m,s,e)).join(' ')}</div>`;
+      if(!here.length) return `<div class="${pc.trim()}"${ps}></div>`;
+      return `<div class="${markCls(here[here.length-1])}${pc}"${ps} title="${esc(here.map(e=>describe(m,e)).join(' | '))}">${here.map(e=>markTxt(m,s,e)).join(' ')}</div>`;
     }).join('');
+    pl = null; plTO = false; lastTO = false;
   });
+  if(pl){ const pc = plTO ? '' : 'plb'; g += plHead(0) + rows.map(()=>`<div class="${pc}" style="--mc:${esc(plCol)}"></div>`).join(''); }
   return `<div class="panel chrono" data-act="zoom" data-v="chrono" data-side="${s}" aria-label="Possession timeline, tap to enlarge">${lab}<div class="ch-scroll" data-chrono><div class="ch-grid">${g}</div></div></div>`;
 }
 function scrollChronos(){ document.querySelectorAll('[data-chrono]').forEach(el=>{ el.scrollLeft = el.scrollWidth; }); }
@@ -864,7 +872,7 @@ function baseSteps(kind){
 function afterRes(res, phase){
   if(SHOT.includes(res)) return [P('own','p','Shooter'), {t:'zone'}];
   if(TURN.includes(res)) return [P('own','p','Turnover by'), P('opp','rec','Ball won by')];
-  if(res==='7M')   return [P('own','p','7m provoked by'), P('opp','opp','7m committed by'), ...(isTrans(phase)?[]:[{t:'zone'}])];
+  if(res==='7M')   return [P('own','p','7m provoked by'), P('opp','opp','7m committed by'), {t:'zone'}];
   if(res==='2MIN') return [P('own','p',"2' provoked by"), P('opp','opp',"Player sanctioned (2')"), ...TIME];
   if(FOULS.includes(res)) return [P('opp','opp','Foul committed by')];
   return [];
@@ -890,7 +898,7 @@ function commit(){
   const before = ['L','R'].flatMap(s=>outs(m,s).map(x=>[x.e.id,x.n]));
   const e = {id:uid(), kind:f.kind, side:f.side, half:m.half, ...f.d};
   if(e.kind==='poss'){
-    if(!SHOT.includes(e.res) && !(e.res==='7M' && !isTrans(e.phase))) delete e.zone;
+    if(!SHOT.includes(e.res) && e.res!=='7M') delete e.zone;
     if((SHOT.includes(e.res) && !isCC(e.zone)) || e.res==='SFOUL') e.gk = m.activeGk[o] ?? null;
     if(SHOT.includes(e.res) && m.passive?.[f.side]) e.passive = true;
     // passive warning: kept after a foul (same attack goes on), switched off with any other ending
@@ -938,8 +946,10 @@ function flowHTML(m){
     q = `${st.label} <span style="color:var(--muted);font-size:15px">· ${esc(T.abbr)}</span>`;
     body = `<div class="opts pl">${roster(m,side).map(p=>opt(p.id,p.num,p.gk?'gk':'',p.name+(p.gk?' · GK':''))).join('')}${opt('?','?','u','Unknown')}${st.key==='rec'?opt('none','No one','u','own error'):''}</div>${st.key==='ast'?`<div class="opts fbz">${opt('none','No assist','t')}</div>`:''}`;
   } else if(st.t==='zone'){
-    q = 'Shot zone';
-    if(isTrans(f.d.phase)){
+    q = f.d.res==='7M' ? '7m provoked in zone' : 'Shot zone';
+    if(isTrans(f.d.phase) && f.d.res==='7M'){
+      body = `<div class="opts fbz">${['L','C','R'].map(z=>opt(z,ZONE_LABEL[z])).join('')}</div>`;
+    } else if(isTrans(f.d.phase)){
       body = `<div class="opts fbz">${['L','C','R'].map(z=>opt(z,ZONE_LABEL[z])).join('')}</div>
         <div class="grp-l">C/C (long shot) · counts as FB1w in stats, not for the goalkeeper</div>
         <div class="opts fbz">${['CCL','CCC','CCR'].map(z=>opt(z,ZONE_LABEL[z])).join('')}</div>`;
@@ -1061,11 +1071,11 @@ function setupHTML(){
   const mrow = m => { const sc = score(m);
     return `<div class="li"><div class="main"><div class="t1">${esc(fullCode(m))} <span class="num" style="color:var(--muted)">${sc.L}–${sc.R}</span></div><div class="t2">${esc(team(m.homeId)?.name||'?')} vs ${esc(team(m.awayId)?.name||'?')} · ${m.events.length} actions</div></div>
       ${m.status==='live' ? `<button class="mini" data-act="open-match" data-v="${m.id}">Open bench</button><button class="mini" data-act="finish-ask" data-v="${m.id}">Finish</button>` : `<button class="mini" data-act="open-match" data-v="${m.id}">View</button>`}
-      ${m.status==='live' ? `<button class="mini" data-act="squad" data-v="${m.id}">Squad</button><button class="mini" data-act="check" data-v="${m.id}">Checklist</button>` : ''}<button class="mini" data-act="export-match" data-v="${m.id}">Backup</button><button class="mini" data-act="print" data-v="${m.id}">Print / PDF</button><button class="mini danger" data-act="del-match-ask" data-v="${m.id}">Delete</button></div>`; };
+      ${m.status==='live' ? `<button class="mini" data-act="squad" data-v="${m.id}">Squad</button><button class="mini" data-act="check" data-v="${m.id}" ${m.checkDone?'style="border-color:var(--fb);color:var(--fb)"':''}>${m.checkDone?'Checklist ✓':'Checklist'}</button>` : ''}<button class="mini" data-act="edit-match" data-v="${m.id}">Edit</button><button class="mini" data-act="export-match" data-v="${m.id}">Backup</button><button class="mini" data-act="print" data-v="${m.id}">Print / PDF</button><button class="mini danger" data-act="del-match-ask" data-v="${m.id}">Delete</button></div>`; };
   const trow = t => `<div class="li"><span class="dot" style="background:${esc(t.color)}"></span><div class="main"><div class="t1">${esc(t.name)} <span style="color:var(--muted);font-weight:500">${esc(t.abbr)}</span>${t.own?' <span class="badge">Our club</span>':''}</div><div class="t2">${t.players.filter(p=>p.active!==false).length} players · ${t.players.filter(p=>p.gk&&p.active!==false).length} GK</div></div><button class="mini" data-act="edit-team" data-v="${t.id}">Edit</button></div>`;
   const th = DB.settings.theme || 'light';
   const tb = (v,l) => `<button data-act="theme" data-v="${v}" aria-pressed="${th===v}">${l}</button>`;
-  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?(window.BENCH_VERSION||"0.12"):"0.12 preview"}</span>
+  return `<header class="top"><span class="code"><b>BENCH LIVE STATS</b></span><span class="badge">v${window.BENCH_PWA?(window.BENCH_VERSION||"0.13"):"0.13 preview"}</span>
       ${UI.updateAvail ? `<button class="tb upd" data-act="update-ask">New version ${esc(UI.updateAvail)} · Update</button>` : ''}
       ${match()&&match().status==='live'?`<button class="tb primary" data-act="open-match" data-v="${UI.matchId}" style="margin-left:auto">Back to bench →</button>`:''}</header>
     <div class="setup"><div class="setup-in">
@@ -1095,7 +1105,7 @@ function closeModal(){ UI.modal = null; renderModal(); }
 function renderModal(){
   const host = document.getElementById('modal-host'), M = UI.modal;
   if(!M){ host.innerHTML=''; UI.lastModalType = null; return; }
-  const map = {team:teamModal, newmatch:newMatchModal, log:logModal, edit:editModal, export:exportModal, import:importModal, confirm:confirmModal, info:infoModal, score:scoreModal, zoom:zoomModal, squad:squadModal, check:checkModal};
+  const map = {team:teamModal, newmatch:newMatchModal, log:logModal, edit:editModal, export:exportModal, import:importModal, confirm:confirmModal, info:infoModal, score:scoreModal, zoom:zoomModal, editmatch:editMatchModal, squad:squadModal, check:checkModal};
   const prevBody = host.querySelector('.m-body'), keep = prevBody && UI.lastModalType===M.type ? prevBody.scrollTop : 0;
   host.innerHTML = `<div class="scrim" data-act="scrim">${map[M.type](M)}</div>`;
   UI.lastModalType = M.type;
@@ -1143,6 +1153,18 @@ function newMatchModal(){
     <div class="err" id="n-err"></div>`,
     `<button class="tb" data-act="close-modal">Cancel</button><button class="tb primary" data-act="create-match">Create and open bench</button>`);
 }
+function editMatchModal(M){
+  const m = DB.matches.find(x=>x.id===M.id), d = m.date.split('-'), y = Number(d[0]);
+  const sel = (id,list,cur) => `<select id="${id}">${list.map(v=>`<option ${v===cur?'selected':''}>${v}</option>`).join('')}</select>`;
+  const years = [...new Set([y-1,y,y+1,Number(today().slice(0,4))])].sort().map(String);
+  return mShell('Edit match', `
+    <div class="row3"><label class="f">Year${sel('em-y',years,d[0])}</label><label class="f">Month${sel('em-m',MONTHS,d[1])}</label><label class="f">Day${sel('em-d',Array.from({length:31},(_,i)=>two(i+1)),d[2])}</label></div>
+    <label class="f">Match code<input type="text" id="em-code" value="${esc(m.code)}" autocomplete="off" autocapitalize="characters"></label>
+    <p class="hint">${esc(team(m.homeId)?.name||'?')} vs ${esc(team(m.awayId)?.name||'?')} · ${m.events.length} actions. Only the date and the code change; the actions stay as they are.</p>
+    ${m.status!=='live' ? `<p class="hint">This match is completed and read only. <b>Reopen</b> it to correct actions in the bench (Actions ☰ → Edit), then finish it again.</p>` : ''}
+    <div class="err" id="em-err"></div>`,
+    `${m.status!=='live' ? `<button class="mini" data-act="reopen-match" data-v="${m.id}">Reopen for corrections</button><span style="flex:1"></span>` : ''}<button class="tb" data-act="close-modal">Cancel</button><button class="tb primary" data-act="save-match" data-v="${m.id}">Save</button>`);
+}
 function logModal(){
   const m = match(), lock = ro(m);
   const list = m.events.map((e,i)=>({e,i})).reverse().map(({e,i})=>`<div class="logi"><span class="ix">${i+1}</span><span class="sd" style="color:${esc(sideTeam(m,e.side).color)}">${esc(sideTeam(m,e.side).abbr)}</span>
@@ -1160,7 +1182,7 @@ function editFields(d){
     if(d.res==='GOAL' && canAssist(d.phase, d.zone)) f.push('ast');
     if(d.res==='BLOCK') f.push('blk');
     if(['7M','2MIN',...FOULS].includes(d.res)) f.push('opp');
-    if(d.res==='7M' && !isTrans(d.phase)) f.push('zone');
+    if(d.res==='7M') f.push('zone');
     if(d.res==='SFOUL') f.push('gk');
     if(d.res==='2MIN') f.push('min','sec');
     return f;
@@ -1174,7 +1196,7 @@ function editModal(M){
   const pl = side => [...sideTeam(m,side).players.slice().sort(byNum).map(p=>[p.id,`#${p.num} ${p.name}${p.active===false?' (former)':''}`]),['?','Unknown']];
   const gks = side => [...sideTeam(m,side).players.filter(p=>p.gk).sort(byNum).map(p=>[p.id,`#${p.num} ${p.name}`]),['','None']];
   const nums = n => Array.from({length:n},(_,i)=>[i,two(i)]);
-  const F = editFields(d), out = [sel('half','Half',d.half,[[1,'1st half'],[2,'2nd half']])];
+  const F = editFields(d), out = [sel('side','Team',d.side,[['L',sideTeam(m,'L').name],['R',sideTeam(m,'R').name]]), sel('half','Half',d.half,[[1,'1st half'],[2,'2nd half']])];
   const pLabel = d.kind==='poss' ? (SHOT.includes(d.res)?'Shooter':TURN.includes(d.res)?'Turnover by':'Provoked by') : d.kind==='p7' ? 'Shooter' : 'Player';
   const oLabel = d.res==='7M' ? 'Committed by' : (d.res==='2MIN' ? 'Sanctioned' : d.kind==='pen2' ? 'Provoked by' : 'Foul by');
   F.forEach(k=>{
@@ -1183,7 +1205,7 @@ function editModal(M){
       out.push(sel('res','Result',d.res,rs.map(r=>[r,RES_LABEL[r]||r]))); }
     if(k==='p') out.push(sel('p',pLabel,d.p,pl(s)));
     if(k==='opp') out.push(sel('opp',oLabel,d.opp,pl(o)));
-    if(k==='zone'){ const zs = isTrans(d.phase) ? ['L','C','R','CCL','CCC','CCR'] : POS_ZONES.map(z=>z[1]); out.push(sel('zone','Zone',d.zone,zs.map(z=>[z,ZONE_LABEL[z]]))); }
+    if(k==='zone'){ const zs = isTrans(d.phase) ? (d.res==='7M' ? ['L','C','R'] : ['L','C','R','CCL','CCC','CCR']) : POS_ZONES.map(z=>z[1]); out.push(sel('zone','Zone',d.zone,zs.map(z=>[z,ZONE_LABEL[z]]))); }
     if(k==='gk') out.push(sel('gk','Goalkeeper',d.gk,gks(o)));
     if(k==='passive') out.push(sel('passive','Passive play',d.passive?'1':'',[['','No'],['1','Yes']]));
     if(k==='reb') out.push(sel('reb','Rebound by the shooter',d.reb||'',[['','No rebound'],...SHOT.map(r=>[r,RES_LABEL[r]]),['7M','7m provoked']]));
@@ -1202,7 +1224,7 @@ function cleanEvent(d){
   const keep = new Set(['id','kind','side','half',...editFields(d)]);
   Object.keys(d).forEach(k=>{ if(!keep.has(k)) delete d[k]; });
   if(d.kind==='poss' && SHOT.includes(d.res) && isCC(d.zone)) delete d.gk;
-  if(d.kind==='poss' && keep.has('zone')){ const ok = isTrans(d.phase) ? ['L','C','R','CCL','CCC','CCR'] : POS_ZONES.map(z=>z[1]); if(!ok.includes(d.zone)) d.zone = ok[0]; }
+  if(d.kind==='poss' && keep.has('zone')){ const ok = isTrans(d.phase) ? (d.res==='7M' ? ['L','C','R'] : ['L','C','R','CCL','CCC','CCR']) : POS_ZONES.map(z=>z[1]); if(!ok.includes(d.zone)) d.zone = ok[0]; }
   if(!d.passive) delete d.passive;
   ['p','opp','rebP','rebOpp'].forEach(k=>{ if(keep.has(k) && d[k]===undefined) d[k]='?'; });
   ['min','sec'].forEach(k=>{ if(keep.has(k) && d[k]===undefined) d[k]=0; });
@@ -1239,7 +1261,7 @@ function zoomModal(M){
   const title = {court:'Positional shots', fb:'Fastbreak & after-goal shots', chrono:'Possessions'}[M.what];
   const body = M.what==='court' ? courtHTML(m,s) : M.what==='fb' ? fbMapHTML(m,s) : chronoHTML(m,s);
   const legend = M.what==='chrono' ? '<p class="hint">Red: goal, 7m or 2\' provoked · Blue: missed shot or turnover · Black: fastbreak stopped (Stop FB, foul) · Coloured bar: time-out of that team · Dashed line ⇄: playmaker change · Underlined: shot in passive play.</p>'
-    : '<p class="hint">Red: goal · Blue: no goal' + (M.what==='court' ? ' · Black: 7m provoked · Underlined: passive play' : '') + '</p>';
+    : '<p class="hint">Red: goal · Blue: no goal · Black: 7m provoked' + (M.what==='court' ? ' · Underlined: passive play' : '') + '</p>';
   const hl = vh(m)===1 ? '1st half' : '2nd half';
   return mShell(`${T.name} · ${title} · ${hl}`, `<div class="zoom">${body}</div>${legend}`, '', 'x').replace('class="modal wide"', 'class="modal xwide"');
 }
@@ -1291,9 +1313,9 @@ function checkSteps(){
   const b = UI.batt, si = storageInfo(), last = DB.settings.lastBackup, age = last ? (Date.now()-last)/3600000 : null;
   const land = (screen.orientation?.type || '').startsWith('landscape') || window.innerWidth > window.innerHeight;
   return [
-    {k:'battery', t:'Battery', st: !b ? ['none','Check the level on the tablet'] : (b.level>=0.8 || b.charging) ? ['ok', `${Math.round(b.level*100)}%${b.charging?' · charging':''}`] : b.level>=0.4 ? ['warn', `${Math.round(b.level*100)}% · charge it if you can`] : ['bad', `${Math.round(b.level*100)}% · charge it before the match`],
-      txt:'Charge to 100% before the warm-up. Keep a power bank and a cable in the bag.'},
-    {k:'dnd', t:'Do not disturb', st:['none','The app cannot check this'],
+    {k:'battery', t:'Battery', st: !b ? ['none',''] : (b.level>=0.75 || b.charging) ? ['ok', `${Math.round(b.level*100)}%${b.charging?' · charging':''}`] : ['bad', `${Math.round(b.level*100)}%`],
+      txt:'Charge to 100% before the warm-up.'},
+    {k:'dnd', t:'Do not disturb', st:['none',''],
       txt:'Swipe down from the top of the screen and turn on Do not disturb, so no call or notification covers the bench during the match.'},
     {k:'rotate', t:'Landscape locked', st: land ? ['ok','Tablet is in landscape now'] : ['warn','Turn the tablet to landscape'],
       txt:'With the tablet in landscape, open quick settings and turn auto-rotate off, so the screen does not flip when you move it.'},
@@ -1313,7 +1335,7 @@ function checkModal(M){
       <svg class="ck-big ck-${st.st[0]}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${CK_ICON[st.k]}</svg>
       <div class="ck-n">${i+1} / ${steps.length}</div>
       <h3 class="ck-t">${st.t}</h3>
-      <span class="ck-pill ck-${st.st[0]}">${label} · ${esc(st.st[1])}</span>
+      ${st.st[1] ? `<span class="ck-pill ck-${st.st[0]}">${label} · ${esc(st.st[1])}</span>` : ''}
       <p class="ck-txt">${st.txt}</p>
       ${st.action||''}
     </div>`,
@@ -1351,11 +1373,6 @@ window.addEventListener('online', healthChecks);
 function readSensors(){
   try{ navigator.getBattery?.().then(b=>{ const upd = () => { UI.batt = {level:b.level, charging:b.charging}; if(UI.modal?.type==='check') renderModal(); }; upd(); b.addEventListener('levelchange',upd); b.addEventListener('chargingchange',upd); }); }catch(e){}
   try{ navigator.storage?.persisted?.().then(v=>{ UI.persisted = v; }); }catch(e){}
-}
-// shown when the bench opens for a live match that has no actions yet
-function maybeChecklist(){
-  const m = match();
-  if(UI.view==='match' && m && m.status==='live' && !m.events.length && !m.checkDone && !(UI.ckSkipped||{})[m.id] && !UI.modal) openModal('check',{id:m.id, step:0});
 }
 function infoModal(M){ return mShell(M.title, `<p style="margin:0;line-height:1.5">${esc(M.text)}</p>`, `<button class="tb primary" data-act="close-modal">OK</button>`); }
 
@@ -1421,7 +1438,7 @@ document.addEventListener('click', ev=>{
   const act = b.dataset.act, v = b.dataset.v, side = b.dataset.side, m = match();
   // any registering tap while looking back at the 1st half brings the bench back to the 2nd half
   if(UI.viewHalf && ['phase','yc','rc','out3','pen2','p7','to','to-del','gk','undo','pl'].includes(act)) UI.viewHalf = null;
-  if(act==='scrim'){ if(ev.target===b) closeModal(); return; }
+  if(act==='scrim'){ if(ev.target===b){ const md = UI.modal; closeModal(); if(md?.type==='squad' && md.thenCheck) openModal('check',{id:md.id, step:0}); } return; }
   switch(act){
     case 'phase': startFlow(side,'poss',{phase:v}); break;
     case 'foul': case 'yc': case 'rc': case 'out3': case 'pen2': case 'p7': case 'to': startFlow(side,act); break;
@@ -1442,8 +1459,8 @@ document.addEventListener('click', ev=>{
     case 'ahalf': UI.aHalf = v; render(); break;
     case 'atab': UI.aTab = v; render(); break;
     case 'go-setup': UI.viewHalf=null; UI.view='setup'; UI.flow=null; UI.analysis=false; UI.sanc=null; render(); break;
-    case 'open-match': UI.viewHalf=null; UI.matchId = v; UI.view='match'; UI.analysis=false; UI.flow=null; UI.sanc=null; closeModal(); render(); maybeChecklist(); break;
-    case 'close-modal': closeModal(); break;
+    case 'open-match': UI.viewHalf=null; UI.matchId = v; UI.view='match'; UI.analysis=false; UI.flow=null; UI.sanc=null; closeModal(); render(); break;
+    case 'close-modal': { const md = UI.modal; closeModal(); if(md?.type==='squad' && md.thenCheck) openModal('check',{id:md.id, step:0}); break; }
     case 'site-dismiss': UI.siteDismissed = true; siteBar(); break;
     case 'update-ask': openModal('confirm',{title:`Update to version ${UI.updateAvail}?`,text:'The app will restart with the new version. Your teams and matches are kept. Never update on a match day: do it at least a day before and try it with a test match.',ok:'update-go',okLabel:'Update now'}); break;
     case 'update-go': closeModal(); try{ save(); }catch(e){} swCall('apply').then(()=>location.reload()); break;
@@ -1517,7 +1534,14 @@ document.addEventListener('click', ev=>{
       const mt = {id:uid(), date, code, homeId:h, awayId:a, leftId, rightId, status:'live', half:1, activeGk:{L:null,R:null}, events:[], scoreAdj:{L:0,R:0}, breakEnd:null, created:Date.now()};
       DB.matches.push(mt); UI.matchId = mt.id;
       mt.activeGk.L = gkList(mt,'L')[0]?.id ?? null; mt.activeGk.R = gkList(mt,'R')[0]?.id ?? null;
-      save(); UI.view='match'; render(); openModal('squad',{id:mt.id}); break; }
+      save(); UI.viewHalf=null; UI.analysis=false; UI.flow=null; UI.sanc=null; UI.view='match'; render(); openModal('squad',{id:mt.id, thenCheck:true}); break; }
+    case 'edit-match': openModal('editmatch',{id:v}); break;
+    case 'save-match': { const mt = DB.matches.find(x=>x.id===v), err = document.getElementById('em-err');
+      const code = document.getElementById('em-code').value.trim().toUpperCase(), date = `${document.getElementById('em-y').value}-${document.getElementById('em-m').value}-${document.getElementById('em-d').value}`;
+      if(!code){ err.textContent = 'Write the match code.'; break; }
+      if(isNaN(new Date(date+'T12:00:00').getTime()) || new Date(date+'T12:00:00').toISOString().slice(0,10)!==date){ err.textContent = 'That date does not exist. Check the day and month.'; break; }
+      mt.code = code; mt.date = date; save(); closeModal(); render(); toast(`Match saved · ${fullCode(mt)}`); break; }
+    case 'reopen-match': { const mt = DB.matches.find(x=>x.id===v); mt.status = 'live'; save(); closeModal(); render(); toast(`${fullCode(mt)} reopened · finish it again when the corrections are done`); break; }
     case 'finish-ask': openModal('confirm',{title:'Finish match?',text:'The match will move to completed matches and become read only. Export a JSON backup afterwards.',ok:'finish',okLabel:'Finish match',v}); break;
     case 'finish': { const mt = DB.matches.find(x=>x.id===v); mt.status='done'; mt.breakEnd=null; save(); closeModal(); render(); toast('Match finished'); autoBackup(mt, 'all-game'); break; }
     case 'del-match-ask': { const mt = DB.matches.find(x=>x.id===v);
@@ -1545,6 +1569,7 @@ document.addEventListener('change', ev=>{
   const el = ev.target;
   if(el.dataset.edit && UI.modal?.type==='edit'){
     const k = el.dataset.edit, d = UI.modal.draft; let v = el.value;
+    if(k==='side'){ if(v!==d.side){ d.side = v; ['p','opp','ast','blk','rec','rebP','rebOpp'].forEach(x=>{ if(d[x]!==undefined) d[x] = (x==='ast'||x==='rec') ? 'none' : '?'; }); if('gk' in d) d.gk = match().activeGk[other(v)] ?? null; renderModal(); toast('Team changed · choose the players again'); } return; }
     if(['half','min','sec'].includes(k)) v = Number(v);
     if(k==='gk') v = v==='' ? null : v;
     if(k==='passive'){ if(v==='1') d.passive = true; else delete d.passive; return; }
@@ -1612,7 +1637,6 @@ applyTheme();
 { const live = [...DB.matches].reverse().find(m=>m.status==='live'); if(live) UI.matchId = live.id; else UI.view='setup'; }
 render();
 readSensors();
-maybeChecklist();
 healthChecks();
 </script>
 
